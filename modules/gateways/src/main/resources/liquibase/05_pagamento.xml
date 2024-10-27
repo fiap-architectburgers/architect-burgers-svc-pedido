@@ -1,0 +1,64 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="05_pagamento" author="rodrigo">
+        <createTable tableName="pagamento">
+            <column name="pagamento_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_pedido" type="int">
+                <constraints nullable="false" foreignKeyName="fk_pagamento_pedido" references="pedido(pedido_id)"/>
+            </column>
+            <column name="forma_pagamento" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="valor" type="numeric(7,2)">
+                <constraints nullable="false" />
+            </column>
+            <column name="status" type="text">
+                <constraints nullable="false" />
+            </column>
+            <column name="data_hora_criacao" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="data_hora_atualizacao" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+            <column name="codigo_pagamento_cliente" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="id_pedido_sistema_externo" type="text">
+                <constraints nullable="true" />
+            </column>
+        </createTable>
+
+        <insert tableName="pagamento">
+            <column name="id_pedido" value="1" />
+            <column name="forma_pagamento" value="Integracao_GatewayX" />
+            <column name="valor" value="28.90" />
+            <column name="status" value="FINALIZADO" />
+            <column name="data_hora_criacao" value="2024-05-18T15:30:12" />
+            <column name="data_hora_atualizacao" value="2024-05-18T15:31:12" />
+            <column name="codigo_pagamento_cliente" value="barcode_data:1234567890" />
+            <column name="id_pedido_sistema_externo" value="2024-9988" />
+        </insert>
+
+        <insert tableName="pagamento">
+            <column name="id_pedido" value="5" />
+            <column name="forma_pagamento" value="Integracao_GatewayPay" />
+            <column name="valor" value="22.90" />
+            <column name="status" value="PENDENTE" />
+            <column name="data_hora_criacao" value="2024-05-17T14:30:12" />
+            <column name="data_hora_atualizacao" value="2024-05-17T14:30:12" />
+            <column name="codigo_pagamento_cliente" value="00020101021243650016COM.MERCADOLIBRE020130636787e9685-7de5-43f1-b09a-6d70f6f6c1e45204000053039865802BR5909Test Test6009SAO PAULO62070503***63043962" />
+            <column name="id_pedido_sistema_externo" value="98-7654-321" />
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

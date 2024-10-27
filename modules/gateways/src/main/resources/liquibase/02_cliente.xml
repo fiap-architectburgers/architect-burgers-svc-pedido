@@ -1,0 +1,38 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="02_cliente" author="rodrigo">
+        <createTable tableName="cliente">
+            <column name="cliente_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="cpf" type="varchar(11)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="nome" type="text">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <insert tableName="cliente">
+            <column name="cpf" value="12332112340"/>
+            <column name="nome" value="Roberto Carlos"/>
+            <column name="email" value="roberto.carlos@example.com"/>
+        </insert>
+        <insert tableName="cliente">
+            <column name="cpf" value="99988877714"/>
+            <column name="nome" value="Wanderleia"/>
+            <column name="email" value="wanderleia@example.com"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>

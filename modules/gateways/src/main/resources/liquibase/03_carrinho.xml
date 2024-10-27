@@ -1,0 +1,60 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+    <changeSet id="03_carrinho" author="rodrigo">
+        <createTable tableName="carrinho">
+            <column name="carrinho_id" type="int" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="id_cliente_identificado" type="int">
+                <constraints nullable="true" foreignKeyName="fk_carrinho_cliente" references="cliente(cliente_id)" deleteCascade="true"/>
+            </column>
+            <column name="nome_cliente_nao_identificado" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="observacoes" type="text">
+                <constraints nullable="true" />
+            </column>
+            <column name="data_hora_criado" type="timestamp">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="carrinho_item">
+            <column name="carrinho_id" type="int">
+                <constraints primaryKey="false" nullable="false"
+                             foreignKeyName="fk_carrinho_item" references="carrinho(carrinho_id)" />
+            </column>
+            <column name="item_cardapio_id" type="int">
+                <constraints primaryKey="false" nullable="false"
+                             foreignKeyName="fk_carrinho_item_cardapio" references="item_cardapio(item_cardapio_id)" deleteCascade="true"/>
+            </column>
+            <column name="num_sequencia" type="int">
+                <constraints primaryKey="false" nullable="false" />
+            </column>
+        </createTable>
+
+        <insert tableName="carrinho">
+            <column name="id_cliente_identificado" value="2" />
+            <column name="observacoes" value="Sem cebola" />
+            <column name="data_hora_criado" value="2024-04-30T15:32:58" />
+        </insert>
+        <insert tableName="carrinho_item">
+            <column name="carrinho_id" value="1"/>
+            <column name="item_cardapio_id" value="1"/>
+            <column name="num_sequencia" value="1"/>
+        </insert>
+        <insert tableName="carrinho_item">
+            <column name="carrinho_id" value="1"/>
+            <column name="item_cardapio_id" value="3"/>
+            <column name="num_sequencia" value="2"/>
+        </insert>
+
+    </changeSet>
+
+</databaseChangeLog>
