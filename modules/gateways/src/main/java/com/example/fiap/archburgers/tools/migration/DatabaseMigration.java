@@ -20,26 +20,10 @@ public class DatabaseMigration implements AutoCloseable {
     private final DatabaseConnection databaseConnection;
     private final boolean isPoolOwner;
 
-    public static void main(String[] args) throws Exception {
-        if (args.length != 4) {
-            System.err.println("Usage: DatabaseMigration <driverClass> <dbUrl> <dbUser> <dbPass>");
-            System.exit(1);
-        }
-
-        try (var migration = new DatabaseMigration(args[0], args[1], args[2], args[3])) {
-            migration.runMigrations();
-        }
-    }
-
     @Autowired
     public DatabaseMigration(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
         this.isPoolOwner = false;
-    }
-
-    public DatabaseMigration(String driverClass, String dbUrl, String dbUser, String dbPass) {
-        this.databaseConnection = new DatabaseConnection(driverClass, dbUrl, dbUser, dbPass);
-        this.isPoolOwner = true;
     }
 
     public void runMigrations() throws Exception {

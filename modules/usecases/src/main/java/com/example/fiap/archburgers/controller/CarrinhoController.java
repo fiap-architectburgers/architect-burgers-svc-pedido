@@ -3,7 +3,7 @@ package com.example.fiap.archburgers.controller;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
-import com.example.fiap.archburgers.domain.external.CatalogoProdutosService;
+import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarCarrinhoParam;
 import com.example.fiap.archburgers.domain.usecases.CarrinhoUseCases;
 import com.example.fiap.archburgers.domain.utils.Clock;
@@ -15,9 +15,9 @@ public class CarrinhoController {
 
     public CarrinhoController(CarrinhoGateway carrinhoGateway,
                               ClienteGateway clienteGateway,
-                              CatalogoProdutosService catalogoProdutosService,
+                              CatalogoProdutosLocal catalogoProdutosLocal,
                               Clock clock) {
-        this.carrinhoUseCases = new CarrinhoUseCases(carrinhoGateway, clienteGateway, catalogoProdutosService, clock);
+        this.carrinhoUseCases = new CarrinhoUseCases(carrinhoGateway, clienteGateway, catalogoProdutosLocal, clock);
     }
 
     public CarrinhoDetalhe findCarrinho(int idCarrinho) {

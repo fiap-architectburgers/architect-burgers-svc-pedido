@@ -3,18 +3,15 @@ package com.example.fiap.archburgers.domain.usecases;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
-import com.example.fiap.archburgers.domain.datagateway.ItemCardapioGateway;
 import com.example.fiap.archburgers.domain.entities.Carrinho;
 import com.example.fiap.archburgers.domain.entities.Cliente;
 import com.example.fiap.archburgers.domain.entities.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.ItemPedido;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
+import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarCarrinhoParam;
 import com.example.fiap.archburgers.domain.utils.Clock;
-import com.example.fiap.archburgers.domain.valueobjects.Cpf;
-import com.example.fiap.archburgers.domain.valueobjects.IdCliente;
-import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
-import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
+import com.example.fiap.archburgers.domain.valueobjects.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +19,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,7 +34,7 @@ class CarrinhoUseCasesTest {
     @Mock
     private ClienteGateway clienteGateway;
     @Mock
-    private ItemCardapioGateway itemCardapioGateway;
+    private CatalogoProdutosLocal catalogoProdutosLocal;
 
     @Mock
     private Clock clock;
@@ -44,7 +43,7 @@ class CarrinhoUseCasesTest {
 
     @BeforeEach
     void setUp() {
-        carrinhoUseCases = new CarrinhoUseCases(carrinhoGateway, clienteGateway, itemCardapioGateway, clock);
+        carrinhoUseCases = new CarrinhoUseCases(carrinhoGateway, clienteGateway, catalogoProdutosLocal, clock);
     }
 
     @Test
@@ -53,21 +52,16 @@ class CarrinhoUseCasesTest {
 
         when(carrinhoGateway.getCarrinhoSalvoByCliente(new IdCliente(123))).thenReturn(carrinhoSalvoCliente123);
 
-        when(itemCardapioGateway.findByCarrinho(88)).thenReturn(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                )
-        ));
+        when(catalogoProdutosLocal.findAll(List.of(new ItemPedido(1, 1000)))).thenReturn(
+                Map.of(1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90")))
+        );
 
         UsuarioLogado usuarioLogado = mockUsuarioLogado("12332112340");
 
         var result = carrinhoUseCases.criarCarrinho(new CriarCarrinhoParam(null), usuarioLogado);
 
-        assertThat(result).isEqualTo(carrinhoSalvoCliente123.withItens(List.of(
-                        new ItemPedido(1,
-                                new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                        )
-                ))
+        assertThat(result).isEqualTo(new CarrinhoDetalhe(carrinhoSalvoCliente123,
+                Map.of(1000, item1000))
         );
     }
 
@@ -84,7 +78,7 @@ class CarrinhoUseCasesTest {
         UsuarioLogado usuarioLogado = mockUsuarioLogado("12332112340");
 
         var result = carrinhoUseCases.criarCarrinho(new CriarCarrinhoParam(null), usuarioLogado);
-        assertThat(result).isEqualTo(carrinhoVazioCliente123.withId(99));
+        assertThat(result).isEqualTo(new CarrinhoDetalhe(carrinhoVazioCliente123.withId(99), Collections.emptyMap()));
     }
 
     @Test
@@ -97,7 +91,7 @@ class CarrinhoUseCasesTest {
         UsuarioLogado usuarioNaoLogado = mockUsuarioLogado(null);
 
         var result = carrinhoUseCases.criarCarrinho(new CriarCarrinhoParam("João"), usuarioNaoLogado);
-        assertThat(result).isEqualTo(carrinhoNaoIdentificado.withId(101));
+        assertThat(result).isEqualTo(new CarrinhoDetalhe(carrinhoNaoIdentificado.withId(101), Collections.emptyMap()));
     }
 
     @Test
@@ -113,82 +107,74 @@ class CarrinhoUseCasesTest {
     @Test
     void addItemCarrinho() {
         Carrinho carrinhoInicial = Carrinho.carrinhoSalvoClienteIdentificado(
-                88, new IdCliente(123), null, dateTime);
+                88, new IdCliente(123), List.of(
+                        new ItemPedido(1, 1000),
+                        new ItemPedido(2, 1001)
+                ), null, dateTime);
 
         when(carrinhoGateway.getCarrinho(88)).thenReturn(carrinhoInicial);
 
-        when(itemCardapioGateway.findByCarrinho(88)).thenReturn(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                )
-        ));
-
-        when(itemCardapioGateway.findById(1002)).thenReturn(
-                new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
+        when(catalogoProdutosLocal.findAll(List.of(
+                new ItemPedido(1, 1000),
+                new ItemPedido(2, 1001),
+                new ItemPedido(3, 1002)
+        ))).thenReturn(
+                Map.of(1000, item1000, 1001, item1001, 1002, item1002)
         );
 
+        when(catalogoProdutosLocal.findById(1002)).thenReturn(item1002);
+
+        //
         var newCarrinho = carrinhoUseCases.addItem(88, 1002);
 
-        assertThat(newCarrinho).isEqualTo(carrinhoInicial.withItens(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                ),
-                new ItemPedido(3,
-                        new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                )
-        )));
+        Carrinho expectedCarrinhoFinal = Carrinho.carrinhoSalvoClienteIdentificado(
+                88, new IdCliente(123), List.of(
+                        new ItemPedido(1, 1000),
+                        new ItemPedido(2, 1001),
+                        new ItemPedido(3, 1002)
+                ), null, dateTime);
 
-        verify(carrinhoGateway).salvarItemCarrinho(newCarrinho,
-                new ItemPedido(3,
-                        new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                ));
+
+        assertThat(newCarrinho).isEqualTo(new CarrinhoDetalhe(expectedCarrinhoFinal,
+                Map.of(1000, item1000, 1001, item1001, 1002, item1002)));
+
+        verify(carrinhoGateway).salvarItemCarrinho(expectedCarrinhoFinal,
+                new ItemPedido(3, 1002));
     }
 
     @Test
     void deleteItem() {
         Carrinho carrinhoInicial = Carrinho.carrinhoSalvoClienteIdentificado(
-                88, new IdCliente(123), null, dateTime);
+                88, new IdCliente(123), List.of(
+                        new ItemPedido(1, 1000),
+                        new ItemPedido(2, 1001),
+                        new ItemPedido(3, 1002)
+                ), null, dateTime);
 
         when(carrinhoGateway.getCarrinho(88)).thenReturn(carrinhoInicial);
 
-        when(itemCardapioGateway.findByCarrinho(88)).thenReturn(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                ),
-                new ItemPedido(3,
-                        new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                )
+        List<ItemPedido> expectedItensFinal = List.of(
+                new ItemPedido(1, 1000),
+                new ItemPedido(2, 1002)
+        );
+
+        when(catalogoProdutosLocal.findAll(expectedItensFinal)).thenReturn(Map.of(
+                1000, item1000, 1002, item1002
         ));
 
         ///
         var updated = carrinhoUseCases.deleteItem(88, 2);
 
-        Carrinho expectedNewCarrinho = carrinhoInicial.withItens(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                )
-        ));
-        assertThat(updated).isEqualTo(expectedNewCarrinho);
+        Carrinho expectedNewCarrinho = Carrinho.carrinhoSalvoClienteIdentificado(
+                88, new IdCliente(123), expectedItensFinal, null, dateTime);
+
+        assertThat(updated).isEqualTo(new CarrinhoDetalhe(expectedNewCarrinho, Map.of(
+                1000, item1000, 1002, item1002
+        )));
 
         verify(carrinhoGateway).deleteItensCarrinho(expectedNewCarrinho);
-        verify(carrinhoGateway).salvarItemCarrinho(expectedNewCarrinho, new ItemPedido(1,
-                new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-        ));
-        verify(carrinhoGateway).salvarItemCarrinho(expectedNewCarrinho, new ItemPedido(2,
-                new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-        ));
+        verify(carrinhoGateway).salvarItemCarrinho(expectedNewCarrinho, new ItemPedido(1, 1000));
+        verify(carrinhoGateway).salvarItemCarrinho(expectedNewCarrinho, new ItemPedido(2, 1002));
     }
 
     private UsuarioLogado mockUsuarioLogado(String cpf) {
@@ -208,10 +194,13 @@ class CarrinhoUseCasesTest {
     private final LocalDateTime dateTime = LocalDateTime.of(2024, 4, 29, 15, 30);
 
     private final Carrinho carrinhoSalvoCliente123 = Carrinho.carrinhoSalvoClienteIdentificado(
-            88, new IdCliente(123), null, dateTime);
+            88, new IdCliente(123), List.of(new ItemPedido(1, 1000)), null, dateTime);
 
     private final Carrinho carrinhoNaoIdentificado = Carrinho.newCarrinhoVazioClienteNaoIdentificado("João", dateTime);
 
     private final Carrinho carrinhoVazioCliente123 = Carrinho.newCarrinhoVazioClienteIdentificado(new IdCliente(123), dateTime);
 
+    private final ItemCardapio item1000 = new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"));
+    private final ItemCardapio item1001 = new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"));
+    private final ItemCardapio item1002 = new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"));
 }

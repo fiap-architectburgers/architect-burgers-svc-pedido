@@ -7,8 +7,7 @@ import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
 import com.example.fiap.archburgers.domain.entities.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.Pedido;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
-import com.example.fiap.archburgers.domain.external.CachedCatalogo;
-import com.example.fiap.archburgers.domain.external.CatalogoProdutosService;
+import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
 import com.example.fiap.archburgers.domain.external.PagamentoService;
 import com.example.fiap.archburgers.domain.external.PainelPedidos;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarPedidoParam;
@@ -30,20 +29,20 @@ public class PedidoUseCases {
     private final CarrinhoGateway carrinhoGateway;
     private final ClienteGateway clienteGateway;
 
-    private final CachedCatalogo catalogo;
+    private final CatalogoProdutosLocal catalogo;
     private final PagamentoService pagamentoService;
 
     private final Clock clock;
     private final PainelPedidos painelPedidos;
 
     public PedidoUseCases(PedidoGateway pedidoGateway, CarrinhoGateway carrinhoGateway, ClienteGateway clienteGateway,
-                          CatalogoProdutosService catalogoProdutosService,
+                          CatalogoProdutosLocal catalogo,
                           PagamentoService pagamentoService,
                           Clock clock, PainelPedidos painelPedidos) {
         this.pedidoGateway = pedidoGateway;
         this.carrinhoGateway = carrinhoGateway;
         this.clienteGateway = clienteGateway;
-        this.catalogo = new CachedCatalogo(catalogoProdutosService);
+        this.catalogo = catalogo;
         this.pagamentoService = pagamentoService;
 
         this.clock = clock;
@@ -142,9 +141,54 @@ public class PedidoUseCases {
         return updated;
     }
 
+
     public PedidoDetalhe finalizarPedido(Integer idPedido) {
         return loadAndApply(idPedido, Pedido::finalizar);
     }
+
+//    public Pedido finalizarPagamento(int idPedido, String newIdPedidoSistemaExterno) {
+//        Pedido pedido = pedidoGateway.getPedido(idPedido);
+//
+//        if (pedido == null) {
+//            throw new DomainArgumentException("Pedido invalido=" + idPedido);
+//        }
+//
+//        Pagamento inicial = pagamentoGateway.findPagamentoByPedido(idPedido);
+//
+//        if (inicial == null) {
+//            throw new DomainArgumentException("Pagamento nao encontrado. Pedido=" + idPedido);
+//        }
+//
+//        pedido = pedido.withItens(itemCardapioGateway.findByPedido(idPedido));
+//
+//        if (inicial.status() != StatusPagamento.PENDENTE) {
+//            throw new DomainArgumentException("Pagamento nao está Pendente. Pedido=" + idPedido);
+//        }
+//
+//        LocalDateTime dataHoraPagamento = clock.localDateTime();
+//
+//        Pagamento pagamentoFinalizado;
+//        if (newIdPedidoSistemaExterno != null && !newIdPedidoSistemaExterno.equals(inicial.idPedidoSistemaExterno())) {
+//            pagamentoFinalizado = inicial.finalizar(dataHoraPagamento, newIdPedidoSistemaExterno);
+//        } else {
+//            pagamentoFinalizado = inicial.finalizar(dataHoraPagamento);
+//        }
+//
+//        var pedidoPago = pedido.confirmarPagamento(pagamentoFinalizado);
+//
+//        pagamentoGateway.updateStatus(pagamentoFinalizado);
+//
+//        pedidoGateway.updateStatus(pedidoPago);
+//
+//        return pedidoPago;
+//
+//
+//        //        var valorTotalItens = ItemCardapio.somarValores(itens.stream().map(ItemPedido::itemCardapio).toList());
+////        if (!pagamento.valor().equals(valorTotalItens)) {
+////            throw new DomainArgumentException("Valor do pagamento não corresponde aos itens do pedido. Pedido="
+////                    + valorTotalItens + ", Pago=" + pagamento.valor());
+////        }
+//    }
 
     private @NotNull PedidoDetalhe loadAndApply(Integer idPedido, Function<Pedido, Pedido> update) {
         var pedido = pedidoGateway.getPedido(Objects.requireNonNull(idPedido, "ID não pode ser null"));

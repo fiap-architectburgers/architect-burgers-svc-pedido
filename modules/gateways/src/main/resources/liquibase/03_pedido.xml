@@ -37,8 +37,7 @@
                              foreignKeyName="fk_pedido_item" references="pedido(pedido_id)" />
             </column>
             <column name="item_cardapio_id" type="int">
-                <constraints primaryKey="false" nullable="false"
-                             foreignKeyName="fk_pedido_item_cardapio" references="item_cardapio(item_cardapio_id)" deleteCascade="true"/>
+                <constraints primaryKey="false" nullable="false" />
             </column>
             <column name="num_sequencia" type="int">
                 <constraints primaryKey="false" nullable="false" />

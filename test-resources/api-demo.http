@@ -1,0 +1,172 @@
+# ### ### ### ### Etapa "0" - Identificação do cliente (opcional)
+# O serviço /cliente/conectado retorna as informações salvas do cliente.
+# Frontend deverá apresentar para o cliente para confirmação e guardar ID do cliente para o próximo passo
+#
+# (NOVO A PARTIR DA FASE 3)
+# É necessário passar pela Autenticação para consumir este endpoint. O Authenticator irá fornecer o IdToken no header
+# customizado IdentityToken
+###
+# @name Identifica Cliente
+# Identificar cliente pelo CPF
+GET {{baseUrl}}/cliente/conectado
+Authorization: Basic dudu2@example.com burger01
+
+###
+# @name CADASTRAR CLIENTE
+# (NOVO A PARTIR DA FASE 3)
+# Cadastra um cliente na base e no serviço de autenticação externo
+POST {{baseUrl}}/clientes
+Content-Type: application/json
+
+{
+  "nome": "Dudu2",
+  "cpf": "10020030169",
+  "email": "dudu2@example.com",
+  "senha": "burger01"
+}
+
+
+### ### ### ### ### A primeira etapa é iniciar um novo carrinho de compras
+
+###
+# @name Carrinho opção 1: Novo carrinho cliente identificado
+# Cria um novo carrinho utilizando identificação pelo ID do cliente
+# (NOVO A PARTIR DA FASE 3) Requer cliente autenticado
+POST {{baseUrl}}/carrinho
+Content-Type: application/json
+
+{
+  "nomeCliente": "Gilmar"
+}
+
+###
+# @name Carrinho existente cliente identificado
+# Nota: Se o cliente identificado solicitar a criação de um carrinho, e já existe um carrinho aberto
+#       para o mesmo, o sistema oferece o recurso de recuperar este carrinho existente. Permite continuar em caso de falha.
+# (NOVO A PARTIR DA FASE 3) Requer cliente autenticado
+POST {{baseUrl}}/carrinho
+Content-Type: application/json
+
+{
+
+}
+
+###
+# @name Carrinho opção 2 - Cliente não identificado
+# Cliente não identificado é a denominação para clientes não cadastrados na base. A criação de um carrinho de compras
+# para cliente não identificado requer apenas um nome para uso como identificação temporária
+POST {{baseUrl}}/carrinho
+Content-Type: application/json
+
+{
+  "nomeCliente": "Gilmar"
+}
+
+
+###
+# ### ### ### ### Etapa 2: seleção de itens e montagem do carrinho de compras
+
+###
+# @name Consultar carrinho atual
+# # # (URL param é o ID do carrinho)
+GET {{baseUrl}}/carrinho/5
+
+###
+# @name Consulta itens do cardápio
+GET {{baseUrl}}/cardapio
+
+###
+# @name Add Item ao Carrinho
+# # # Recebe no Post o ID do item (consulta cardápio)
+POST {{baseUrl}}/carrinho/2
+Content-Type: application/json
+
+{
+  "idItemCardapio": 4
+}
+
+###
+# @name Excluir itens do Carrinho
+# # # O segundo parâmetro é o número de sequência do item no carrinho
+DELETE {{baseUrl}}/carrinho/5/itens/2
+Content-Type: application/json
+
+
+###
+# @name Set observacoes no carrinho
+PUT {{baseUrl}}/carrinho/5/obs
+Content-Type: application/json
+
+{
+  "observacoes": "Muito sal na batatinha por favor"
+}
+
+###
+# ### ### ### ### Etapa 3 - checkout
+# A lista de formas de pagamento válidas é obtida no serviço de Pagamento
+
+###
+# @name Criar pedido
+# # # Esta ação irá gerar um ID de pedido, que não é igual ao ID do carrinho.
+# # # Carrinho será excluído automaticamente
+POST {{baseUrl}}/pedidos
+Content-Type: application/json
+Authorization: Bearer eyJraWQiOiJ0N3A5ckNOZHp3NGhNNEk3TGc2eDNDVVlcL1o4eTh4R0NReHYxM0xnbHZDMD0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI2NDM4ZDQzOC1jMDQxLTcwZGEtMDZiMy1kODczMmI3OWE0ZWMiLCJjb2duaXRvOmdyb3VwcyI6WyJDbGllbnRlQ2FkYXN0cmFkbyJdLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2lJYnp4eVJJTiIsImNvZ25pdG86dXNlcm5hbWUiOiI2NDM4ZDQzOC1jMDQxLTcwZGEtMDZiMy1kODczMmI3OWE0ZWMiLCJvcmlnaW5fanRpIjoiYmRmNGZjZDUtZWYzYy00NzU0LThlMjEtYTlmNzU4MTgwN2NlIiwiYXVkIjoiNG1zZG1rcTVwM2pkdW1hcTU0MWJ2NWoyZW4iLCJldmVudF9pZCI6IjcxNzA5ZWNmLTMyYTgtNGQwMi1iMzJhLTQ5NTIzZmM4MGEzMiIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzI3MDU2OTExLCJleHAiOjE3MjcwNjA1MTEsImN1c3RvbTpjcGYiOiIxMDAyMDAzMDA4OCIsImlhdCI6MTcyNzA1NjkxMSwianRpIjoiNzE3MjczYTAtM2I3MC00NWQ3LTlkZDAtOWQ1MjNiYzcyMTZlIiwiZW1haWwiOiJkdWR1QGV4YW1wbGUuY29tIn0.E7aiRJd_soy_1uEoekUYsGCgnirLuvUtBPWvPCQp4sR1RlQ5gutpG3GbyTHB2UogSWmgv92ed1H38aWNtmd_KNLLyGpGkdB1Z-wIEx2rkszjyM19vDjw9d6KgafkF0ecQ-E7LOYzDAaIwJEA-sXMKsrWdfi6Pb4KDTzNskykktx1fWZXTJINUU5N3eS07LmjuGnMmy_VjBLSUcsK0S8ID7iYbmsuxn13zx2rk51UW16EH7y8iDt3-5JqPmnYqfyYPEqyFj3FFeMk97JPNUwAKdLbRQia3K35Jh3kwH2FyLDYjKsVaKN06MsaGqXaT5zoqLYnkvYGO5-T_kVLdYPIhw
+
+{
+  "idCarrinho": 2,
+  "formaPagamento": "DINHEIRO"
+}
+
+### ######### Etapa 4 Acompanhamento e preparação
+###
+# @name Listar pedidos recebidos
+GET {{baseUrl}}/pedidos?status=RECEBIDO
+
+###
+# @name Validar pedido
+POST {{baseUrl}}/pedidos/13/validar
+
+###
+# @name Cancelar pedido
+POST {{baseUrl}}/pedidos/12/cancelar
+
+###
+# @name Listar pedidos em preparação (cozinha)
+GET {{baseUrl}}/pedidos?status=PREPARACAO
+
+###
+# @name Listar pedidos com atraso
+GET {{baseUrl}}/pedidos?atraso=true
+
+###
+# @name Atualizar pedido Pronto
+POST {{baseUrl}}/pedidos/13/setPronto
+
+###
+# @name Finalizar pedido
+POST {{baseUrl}}/pedidos/13/finalizar
+
+# # #
+# # # ######### Serviços administrativos
+
+###
+# @name Listar todos os pedidos ativos
+GET {{baseUrl}}/pedidos
+
+###
+# @name Listar todos clientes
+GET {{baseUrl}}/clientes
+
+###
+GET {{baseUrl}}/healthcheck
+
+# É necessário passar pela Autenticação para consumir este endpoint. O Authenticator irá fornecer o IdToken no header
+# customizado IdentityToken
+###
+# @name Identifica usuário conectado atualmente, ou efetua login pela 1a vez
+# Similar ao /cliente/conectado, mas não tenta vincular o login a um Cliente cadastrado
+# Útil para login genérico (terminal de atendimento para clientes anonimos, etc)
+GET {{baseUrl}}/usuario/conectado
+Authorization: Basic anonimo@example.com burger01
+

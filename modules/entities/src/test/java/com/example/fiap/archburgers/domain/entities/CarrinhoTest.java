@@ -1,8 +1,6 @@
 package com.example.fiap.archburgers.domain.entities;
 
 import com.example.fiap.archburgers.domain.valueobjects.IdCliente;
-import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
-import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -15,9 +13,15 @@ class CarrinhoTest {
 
     @Test
     void build_carrinhoSalvoClienteIdentificado() {
-        Carrinho result = Carrinho.carrinhoSalvoClienteIdentificado(1, new IdCliente(123), "Observação Pedido", LocalDateTime.of(2024, 4, 29, 15, 30));
+        Carrinho result = Carrinho.carrinhoSalvoClienteIdentificado(1, new IdCliente(123),
+                List.of(new ItemPedido(1, 1001), new ItemPedido(2, 1002)),
+                "Observação Pedido", LocalDateTime.of(2024, 4, 29, 15, 30));
+
         assertThat(result.id()).isEqualTo(1);
         assertThat(result.idClienteIdentificado()).isEqualTo(new IdCliente(123));
+        assertThat(result.itens()).containsExactly(
+                new ItemPedido(1, 1001), new ItemPedido(2, 1002)
+        );
         assertThat(result.observacoes()).isEqualTo("Observação Pedido");
         assertThat(result.dataHoraCarrinhoCriado()).isEqualTo(LocalDateTime.of(2024, 4, 29, 15, 30));
     }
@@ -29,12 +33,8 @@ class CarrinhoTest {
         carrinho = carrinho.deleteItem(1);
 
         assertThat(carrinho.itens()).containsExactly(
-                new ItemPedido(1,
-                        new ItemCardapio(1008, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1009, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                )
+                new ItemPedido(1, 1008),
+                new ItemPedido(2, 1009)
         );
     }
 
@@ -45,12 +45,8 @@ class CarrinhoTest {
         carrinho = carrinho.deleteItem(3);
 
         assertThat(carrinho.itens()).containsExactly(
-                new ItemPedido(1,
-                        new ItemCardapio(1007, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1008, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                )
+                new ItemPedido(1, 1007),
+                new ItemPedido(2, 1008)
         );
     }
 
@@ -61,12 +57,8 @@ class CarrinhoTest {
         carrinho = carrinho.deleteItem(2);
 
         assertThat(carrinho.itens()).containsExactly(
-                new ItemPedido(1,
-                        new ItemCardapio(1007, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1009, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                )
+                new ItemPedido(1, 1007),
+                new ItemPedido(2, 1009)
         );
     }
 
@@ -90,15 +82,9 @@ class CarrinhoTest {
 
     private Carrinho initial() {
         return new Carrinho(12, new IdCliente(123), null, List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1007, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1008, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                ),
-                new ItemPedido(3,
-                        new ItemCardapio(1009, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"))
-                )
+                new ItemPedido(1, 1007),
+                new ItemPedido(2, 1008),
+                new ItemPedido(3, 1009)
         ), null, dateTime);
     }
 

@@ -13,8 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PedidoTest {
 
     private final List<ItemPedido> sampleItens = List.of(
-            new ItemPedido(1, new ItemCardapio(9, TipoItemCardapio.LANCHE,
-                    "Cheeseburger", "Hamburger com queijo", new ValorMonetario("19.90")))
+             new ItemPedido(1, 9)
     );
 
     @Test
@@ -75,20 +74,5 @@ class PedidoTest {
         var newP = p.confirmarPagamento(pagamento);
 
         assertThat(newP.status()).isEqualTo(StatusPedido.RECEBIDO);
-    }
-
-    @Test
-    void confirmarPagamento_erroValor() {
-        var p = Pedido.pedidoRecuperado(123, null, "Cliente José",
-                sampleItens, null, StatusPedido.PAGAMENTO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.now());
-
-        var pagamento = new Pagamento(44, 123,
-                IdFormaPagamento.DINHEIRO, StatusPagamento.FINALIZADO,
-                new ValorMonetario("25"), LocalDateTime.now(),
-                LocalDateTime.now(), null, null);
-
-        var e = assertThrows(DomainArgumentException.class,() -> p.confirmarPagamento(pagamento));
-        assertThat(e).hasMessage("Valor do pagamento não corresponde aos itens do pedido. Pedido=R$19.90, Pago=R$25.00");
     }
 }

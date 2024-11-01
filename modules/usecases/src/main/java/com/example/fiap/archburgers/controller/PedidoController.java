@@ -5,6 +5,7 @@ import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
+import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
 import com.example.fiap.archburgers.domain.external.CatalogoProdutosService;
 import com.example.fiap.archburgers.domain.external.PagamentoService;
 import com.example.fiap.archburgers.domain.external.PainelPedidos;
@@ -22,12 +23,12 @@ public class PedidoController {
 
     public PedidoController(PedidoGateway pedidoGateway, CarrinhoGateway carrinhoGateway,
                             ClienteGateway clienteGateway,
-                            CatalogoProdutosService catalogoProdutosService,
+                            CatalogoProdutosLocal catalogoProdutosLocal,
                             PagamentoService pagamentoService,
                             Clock clock, PainelPedidos painelPedidos) {
 
         pedidoUseCases = new PedidoUseCases(pedidoGateway, carrinhoGateway, clienteGateway,
-                catalogoProdutosService, pagamentoService, clock, painelPedidos);
+                catalogoProdutosLocal, pagamentoService, clock, painelPedidos);
     }
 
     public PedidoDetalhe criarPedido(CriarPedidoParam param, UsuarioLogado usuarioLogado) throws DomainPermissionException {

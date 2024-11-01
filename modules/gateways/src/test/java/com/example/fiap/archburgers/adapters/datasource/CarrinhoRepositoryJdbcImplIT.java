@@ -120,11 +120,7 @@ class CarrinhoRepositoryJdbcImplIT {
         var carrinhoSalvo = carrinhoRepository.getCarrinhoSalvoByCliente(new IdCliente(2));
         assertThat(carrinhoSalvo).isNotNull();
 
-        carrinhoRepository.salvarItemCarrinho(carrinhoSalvo, new ItemPedido(3,
-                        new ItemCardapio(7, TipoItemCardapio.SOBREMESA, "Mini churros",
-                                "Mini churros de doce de leite", new ValorMonetario("0.99"))
-                )
-        );
+        carrinhoRepository.salvarItemCarrinho(carrinhoSalvo, new ItemPedido(3, 7));
 
         try (var conn = databaseConnection.getConnection()) {
             PreparedStatement stmt = conn.prepareStatement("select * from carrinho_item where carrinho_id = 1 and item_cardapio_id = 7 and num_sequencia = 3");
@@ -142,11 +138,7 @@ class CarrinhoRepositoryJdbcImplIT {
         var savedCarrinho = carrinhoRepository.salvarCarrinhoVazio(carrinho);
         assertThat(savedCarrinho.id()).isGreaterThan(1);
 
-        carrinhoRepository.salvarItemCarrinho(savedCarrinho, new ItemPedido(1,
-                        new ItemCardapio(1, TipoItemCardapio.SOBREMESA, "Hamburger",
-                                "Hamburger", new ValorMonetario("20.50"))
-                )
-        );
+        carrinhoRepository.salvarItemCarrinho(savedCarrinho, new ItemPedido(1, 1));
 
         var counts = getCounts(Objects.requireNonNull(savedCarrinho.id(), "Non null was expected"));
         assertThat(counts[0]).isEqualTo(1);

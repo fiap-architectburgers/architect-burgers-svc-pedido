@@ -7,8 +7,7 @@ import com.example.fiap.archburgers.domain.entities.Carrinho;
 import com.example.fiap.archburgers.domain.entities.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.ItemPedido;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
-import com.example.fiap.archburgers.domain.external.CachedCatalogo;
-import com.example.fiap.archburgers.domain.external.CatalogoProdutosService;
+import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarCarrinhoParam;
 import com.example.fiap.archburgers.domain.utils.Clock;
 import com.example.fiap.archburgers.domain.utils.StringUtils;
@@ -24,18 +23,18 @@ public class CarrinhoUseCases {
 
     private final CarrinhoGateway carrinhoGateway;
     private final ClienteGateway clienteGateway;
-    private final CachedCatalogo catalogo;
+    private final CatalogoProdutosLocal catalogo;
     private final Clock clock;
 
     private final RecuperarCarrinhoPolicy recuperarCarrinhoPolicy;
 
     public CarrinhoUseCases(CarrinhoGateway carrinhoGateway,
                             ClienteGateway clienteGateway,
-                            CatalogoProdutosService catalogoProdutosService,
+                            CatalogoProdutosLocal catalogoProdutosLocal,
                             Clock clock) {
         this.carrinhoGateway = carrinhoGateway;
         this.clienteGateway = clienteGateway;
-        this.catalogo = new CachedCatalogo(catalogoProdutosService);
+        this.catalogo = catalogoProdutosLocal;
         this.clock = clock;
 
         this.recuperarCarrinhoPolicy = new RecuperarCarrinhoPolicy();

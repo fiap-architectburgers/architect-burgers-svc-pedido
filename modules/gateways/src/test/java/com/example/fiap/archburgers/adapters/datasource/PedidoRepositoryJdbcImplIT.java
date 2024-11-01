@@ -62,14 +62,11 @@ class PedidoRepositoryJdbcImplIT {
     @Test
     void savePedido() throws SQLException {
         var pedido = Pedido.novoPedido(null, "Wanderley", List.of(
-                        new ItemPedido(1,
-                                new ItemCardapio(3, TipoItemCardapio.ACOMPANHAMENTO, "Batatas Fritas P", "Batatas fritas porção pequena", new ValorMonetario("8.00"))
-                        ),
-                        new ItemPedido(2,
-                                new ItemCardapio(6, TipoItemCardapio.BEBIDA, "Chá gelado", "Chá gelado com limão, feito na casa", new ValorMonetario("6.00"))
-                        )
+                        new ItemPedido(1, 3),
+                        new ItemPedido(2, 6)
                 ), "Batatas com muito sal",
-                IdFormaPagamento.DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12));
+                IdFormaPagamento.DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12)
+        );
 
         var saved = repository.savePedido(pedido);
 
@@ -241,8 +238,6 @@ class PedidoRepositoryJdbcImplIT {
     }
 
     private List<ItemPedido> sampleItens = List.of(
-            new ItemPedido(1, new ItemCardapio(1, TipoItemCardapio.LANCHE, "Hamburger Vegetariano",
-                    "Hamburger de ervilha com queijo prato", new ValorMonetario("22.90"))
-            )
+            new ItemPedido(1, 1)
     );
 }

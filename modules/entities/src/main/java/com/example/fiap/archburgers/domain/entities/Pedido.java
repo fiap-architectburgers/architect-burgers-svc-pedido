@@ -120,16 +120,8 @@ public final class Pedido {
             throw new DomainArgumentException("Pagamento nao esta finalizado");
         }
 
-        throw new UnsupportedOperationException("Not implemented yet!");
-
-//        var valorTotalItens = ItemCardapio.somarValores(itens.stream().map(ItemPedido::itemCardapio).toList());
-//        if (!pagamento.valor().equals(valorTotalItens)) {
-//            throw new DomainArgumentException("Valor do pagamento não corresponde aos itens do pedido. Pedido="
-//                    + valorTotalItens + ", Pago=" + pagamento.valor());
-//        }
-//
-//        return new Pedido(id, idClienteIdentificado, nomeClienteNaoIdentificado,
-//                itens, observacoes, StatusPedido.RECEBIDO, formaPagamento, dataHoraPedido);
+        return new Pedido(id, idClienteIdentificado, nomeClienteNaoIdentificado,
+                itens, observacoes, StatusPedido.RECEBIDO, formaPagamento, dataHoraPedido);
     }
 
     public Pedido validar() {

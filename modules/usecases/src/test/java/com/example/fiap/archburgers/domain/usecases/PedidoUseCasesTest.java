@@ -1,10 +1,14 @@
 package com.example.fiap.archburgers.domain.usecases;
 
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
-import com.example.fiap.archburgers.domain.datagateway.*;
+import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
+import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
+import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
 import com.example.fiap.archburgers.domain.entities.*;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
+import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
+import com.example.fiap.archburgers.domain.external.PagamentoService;
 import com.example.fiap.archburgers.domain.external.PainelPedidos;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarPedidoParam;
 import com.example.fiap.archburgers.domain.utils.Clock;
@@ -17,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -29,13 +34,11 @@ class PedidoUseCasesTest {
     @Mock
     private CarrinhoGateway carrinhoGateway;
     @Mock
-    private ItemCardapioGateway itemCardapioGateway;
+    private CatalogoProdutosLocal catalogoProdutosLocal;
     @Mock
     private ClienteGateway clienteGateway;
     @Mock
-    private PagamentoUseCases pagamentoUseCases;
-    @Mock
-    private HistoricoPedidosGateway historicoPedidosGateway;
+    private PagamentoService pagamentoService;
     @Mock
     private Clock clock;
     @Mock
@@ -46,8 +49,8 @@ class PedidoUseCasesTest {
     @BeforeEach
     void setUp() {
         pedidoUseCases = new PedidoUseCases(
-                pedidoGateway, carrinhoGateway, clienteGateway, itemCardapioGateway,
-                pagamentoUseCases, historicoPedidosGateway,
+                pedidoGateway, carrinhoGateway, clienteGateway,
+                catalogoProdutosLocal, pagamentoService,
                 clock, painelPedidos);
     }
 
@@ -66,7 +69,7 @@ class PedidoUseCasesTest {
     void criarPedido_invalidPagamento() {
         var usuarioLogado = mock(UsuarioLogado.class);
 
-        when(pagamentoUseCases.validarFormaPagamento("Cheque")).thenThrow(
+        when(pagamentoService.validarFormaPagamento("Cheque")).thenThrow(
                 new DomainArgumentException("Forma de pagamento inválida: Cheque"));
 
         assertThat(assertThrows(DomainArgumentException.class, () -> pedidoUseCases.criarPedido(
@@ -78,42 +81,44 @@ class PedidoUseCasesTest {
     void criarPedido_ok() {
         var usuarioLogado = mockUsuarioLogado("12332112340");
 
+        List<ItemPedido> itensPedido = List.of(
+                new ItemPedido(1, 1000),
+                new ItemPedido(2, 1001)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido = Map.of(
+                1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger",
+                        new ValorMonetario("25.90")),
+                1001, new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante",
+                        new ValorMonetario("5.00"))
+        );
+
         when(carrinhoGateway.getCarrinho(12)).thenReturn(
                 Carrinho.carrinhoSalvoClienteIdentificado(12, new IdCliente(25),
+                        itensPedido,
                         "Lanche sem cebola",
                         LocalDateTime.of(2024, 5, 18, 14, 0))
         );
-        when(itemCardapioGateway.findByCarrinho(12)).thenReturn(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                )
-        ));
+
         when(clienteGateway.getClienteByCpf(new Cpf("12332112340"))).thenReturn(new Cliente(new IdCliente(25),
                 "Mesmo Cliente", new Cpf("12332112340"), "mesmo.cliente@example.com"));
 
         when(clock.localDateTime()).thenReturn(dateTime);
-        when(pagamentoUseCases.validarFormaPagamento("DINHEIRO")).thenReturn(IdFormaPagamento.DINHEIRO);
+        when(pagamentoService.validarFormaPagamento("DINHEIRO")).thenReturn(IdFormaPagamento.DINHEIRO);
 
-        var expectedPedido = Pedido.novoPedido(new IdCliente(25), null, List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                ),
-                new ItemPedido(2,
-                        new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"))
-                )
-        ), "Lanche sem cebola", IdFormaPagamento.DINHEIRO, dateTime);
+        when(catalogoProdutosLocal.findAll(itensPedido)).thenReturn(detalhesItensPedido);
+
+        var expectedPedido = Pedido.novoPedido(new IdCliente(25), null, itensPedido,
+                "Lanche sem cebola", IdFormaPagamento.DINHEIRO, dateTime);
 
         when(pedidoGateway.savePedido(expectedPedido)).thenReturn(expectedPedido.withId(33));
 
         var result = pedidoUseCases.criarPedido(
                 new CriarPedidoParam(12, "DINHEIRO"), usuarioLogado);
 
-        assertThat(result).isEqualTo(expectedPedido.withId(33));
+        assertThat(result).isEqualTo(new PedidoDetalhe(expectedPedido.withId(33), detalhesItensPedido));
 
-        verify(pagamentoUseCases).iniciarPagamento(expectedPedido.withId(33));
+        verify(pagamentoService).iniciarPagamento(expectedPedido.withId(33));
     }
 
     @Test
@@ -125,11 +130,12 @@ class PedidoUseCasesTest {
 
         when(carrinhoGateway.getCarrinho(12)).thenReturn(
                 Carrinho.carrinhoSalvoClienteIdentificado(12, new IdCliente(25),
+                        List.of(new ItemPedido(1, 1000)),
                         "Lanche sem cebola",
                         LocalDateTime.of(2024, 5, 18, 14, 0))
         );
 
-        when(pagamentoUseCases.validarFormaPagamento("DINHEIRO")).thenReturn(IdFormaPagamento.DINHEIRO);
+        when(pagamentoService.validarFormaPagamento("DINHEIRO")).thenReturn(IdFormaPagamento.DINHEIRO);
 
         assertThat(
                 assertThrows(DomainPermissionException.class, () -> pedidoUseCases.criarPedido(
@@ -139,85 +145,108 @@ class PedidoUseCasesTest {
 
     @Test
     void validarPedido() {
+        List<ItemPedido> itensPedido = List.of(
+                new ItemPedido(1, 1000)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido = Map.of(
+                1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger",
+                        new ValorMonetario("25.90"))
+        );
+
         var pedido = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
-                List.of(), "Lanche sem cebola", StatusPedido.RECEBIDO,
+                itensPedido, "Lanche sem cebola", StatusPedido.RECEBIDO,
                 IdFormaPagamento.DINHEIRO, dateTime);
 
         when(pedidoGateway.getPedido(42)).thenReturn(pedido);
-        when(itemCardapioGateway.findByPedido(42)).thenReturn(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                )
-        ));
 
-        var expectedNewPedido = Pedido.pedidoRecuperado(42, new IdCliente(25), null, List.of(),
-                "Lanche sem cebola", StatusPedido.PREPARACAO,
+        when(catalogoProdutosLocal.findAll(itensPedido)).thenReturn(detalhesItensPedido);
+
+        var expectedNewPedido = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
+                itensPedido, "Lanche sem cebola", StatusPedido.PREPARACAO,
                 IdFormaPagamento.DINHEIRO, dateTime);
 
         ///
         var newPedido = pedidoUseCases.validarPedido(42);
 
-        assertThat(newPedido).isEqualTo(expectedNewPedido.withItens(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                )
-        )));
+        assertThat(newPedido).isEqualTo(new PedidoDetalhe(expectedNewPedido, detalhesItensPedido));
 
         verify(pedidoGateway).updateStatus(expectedNewPedido);
     }
 
     @Test
     void setPedidoPronto() {
+        List<ItemPedido> itensPedido = List.of(
+                new ItemPedido(1, 1000)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido = Map.of(
+                1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger",
+                        new ValorMonetario("25.90"))
+        );
+
         var pedido = Pedido.pedidoRecuperado(45, new IdCliente(25), null,
-                List.of(), "Lanche sem cebola", StatusPedido.PREPARACAO,
+                itensPedido, "Lanche sem cebola", StatusPedido.PREPARACAO,
                 IdFormaPagamento.DINHEIRO, dateTime);
 
         when(pedidoGateway.getPedido(45)).thenReturn(pedido);
-        when(itemCardapioGateway.findByPedido(45)).thenReturn(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                )
-        ));
+        when(catalogoProdutosLocal.findAll(itensPedido)).thenReturn(detalhesItensPedido);
 
-        var expectedNewPedido = Pedido.pedidoRecuperado(45, new IdCliente(25), null, List.of(), "Lanche sem cebola",
+        var expectedNewPedido = Pedido.pedidoRecuperado(45, new IdCliente(25), null,
+                itensPedido, "Lanche sem cebola",
                 StatusPedido.PRONTO,
                 IdFormaPagamento.DINHEIRO, dateTime);
-
-        Pedido expectedNewPedidoWithItens = expectedNewPedido.withItens(List.of(
-                new ItemPedido(1,
-                        new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"))
-                )
-        ));
 
         ///
         var newPedido = pedidoUseCases.setPronto(45);
 
-        assertThat(newPedido).isEqualTo(expectedNewPedidoWithItens);
+        assertThat(newPedido).isEqualTo(new PedidoDetalhe(expectedNewPedido, detalhesItensPedido));
 
         verify(pedidoGateway).updateStatus(expectedNewPedido);
-        verify(painelPedidos).notificarPedidoPronto(expectedNewPedidoWithItens);
+        verify(painelPedidos).notificarPedidoPronto(expectedNewPedido);
     }
 
     @Test
     void listarPedidos_byStatus() {
+        List<ItemPedido> itensPedido1 = List.of(
+                new ItemPedido(1, 1000)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido1 = Map.of(
+                1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger",
+                        new ValorMonetario("25.90"))
+        );
+
+        List<ItemPedido> itensPedido2 = List.of(
+                new ItemPedido(1, 2000)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido2 = Map.of(
+                2000, new ItemCardapio(2000, TipoItemCardapio.LANCHE, "Cheeseburger", "Cheeseburger",
+                        new ValorMonetario("27.90"))
+        );
+
+        Pedido pedido1 = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
+                itensPedido1, "Lanche sem cebola", StatusPedido.RECEBIDO,
+                IdFormaPagamento.DINHEIRO, dateTime);
+        Pedido pedido2 = Pedido.pedidoRecuperado(43, null, "Cliente Maria",
+                itensPedido2, null, StatusPedido.RECEBIDO,
+                IdFormaPagamento.DINHEIRO, dateTime);
+
         when(pedidoGateway.listPedidos(List.of(StatusPedido.RECEBIDO), null)).thenReturn(List.of(
-                Pedido.pedidoRecuperado(42, new IdCliente(25), null,
-                        List.of(), "Lanche sem cebola", StatusPedido.RECEBIDO,
-                        IdFormaPagamento.DINHEIRO, dateTime),
-                Pedido.pedidoRecuperado(43, null, "Cliente Maria",
-                        List.of(), null, StatusPedido.RECEBIDO,
-                        IdFormaPagamento.DINHEIRO, dateTime)
+                pedido1,
+                pedido2
         ));
 
+        when(catalogoProdutosLocal.findAll(itensPedido1)).thenReturn(detalhesItensPedido1);
+        when(catalogoProdutosLocal.findAll(itensPedido2)).thenReturn(detalhesItensPedido2);
+
+        ///
         var result = pedidoUseCases.listarPedidosByStatus(StatusPedido.RECEBIDO);
 
         assertThat(result).containsExactly(
-                Pedido.pedidoRecuperado(42, new IdCliente(25), null,
-                        List.of(), "Lanche sem cebola", StatusPedido.RECEBIDO,
-                        IdFormaPagamento.DINHEIRO, dateTime),
-                Pedido.pedidoRecuperado(43, null, "Cliente Maria",
-                        List.of(), null, StatusPedido.RECEBIDO,
-                        IdFormaPagamento.DINHEIRO, dateTime)
+                new PedidoDetalhe(pedido1, detalhesItensPedido1),
+                new PedidoDetalhe(pedido2, detalhesItensPedido2)
         );
     }
 
@@ -231,25 +260,42 @@ class PedidoUseCasesTest {
                 2024, 5, 18, 10, 20, 28
         );
 
-        when(pedidoGateway.listPedidos(List.of(StatusPedido.RECEBIDO, StatusPedido.PREPARACAO), expectedLimitTime)).thenReturn(List.of(
+        List<ItemPedido> itensPedido1 = List.of(
+                new ItemPedido(1, 1000)
+        );
 
-                Pedido.pedidoRecuperado(42, new IdCliente(25), null,
-                        List.of(), "Lanche sem cebola", StatusPedido.RECEBIDO,
-                        IdFormaPagamento.DINHEIRO, dateTime),
-                Pedido.pedidoRecuperado(43, null, "Cliente Maria",
-                        List.of(), null, StatusPedido.PREPARACAO,
-                        IdFormaPagamento.DINHEIRO, dateTime)
-        ));
+        Map<Integer, ItemCardapio> detalhesItensPedido1 = Map.of(
+                1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger",
+                        new ValorMonetario("25.90"))
+        );
+
+        List<ItemPedido> itensPedido2 = List.of(
+                new ItemPedido(1, 2000)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido2 = Map.of(
+                2000, new ItemCardapio(2000, TipoItemCardapio.LANCHE, "Cheeseburger", "Cheeseburger",
+                        new ValorMonetario("27.90"))
+        );
+
+        Pedido pedido1 = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
+                itensPedido1, "Lanche sem cebola", StatusPedido.RECEBIDO,
+                IdFormaPagamento.DINHEIRO, dateTime);
+        Pedido pedido2 = Pedido.pedidoRecuperado(43, null, "Cliente Maria",
+                itensPedido2, null, StatusPedido.PREPARACAO,
+                IdFormaPagamento.DINHEIRO, dateTime);
+
+        when(pedidoGateway.listPedidos(List.of(StatusPedido.RECEBIDO, StatusPedido.PREPARACAO), expectedLimitTime))
+                .thenReturn(List.of(pedido1, pedido2));
+
+        when(catalogoProdutosLocal.findAll(itensPedido1)).thenReturn(detalhesItensPedido1);
+        when(catalogoProdutosLocal.findAll(itensPedido2)).thenReturn(detalhesItensPedido2);
 
         var result = pedidoUseCases.listarPedidosComAtraso();
 
         assertThat(result).containsExactly(
-                Pedido.pedidoRecuperado(42, new IdCliente(25), null,
-                        List.of(), "Lanche sem cebola", StatusPedido.RECEBIDO,
-                        IdFormaPagamento.DINHEIRO, dateTime),
-                Pedido.pedidoRecuperado(43, null, "Cliente Maria",
-                        List.of(), null, StatusPedido.PREPARACAO,
-                        IdFormaPagamento.DINHEIRO, dateTime)
+                new PedidoDetalhe(pedido1, detalhesItensPedido1),
+                new PedidoDetalhe(pedido2, detalhesItensPedido2)
         );
     }
 

@@ -122,8 +122,8 @@ class DatabaseConnectionIT {
             // 3. Em uma "nova" conexão, realiza uma segunda mudança
             conn = databaseConnection.getConnection();
             try {
-                PreparedStatement stmt2 = conn.prepareStatement("update item_cardapio set nome = 'Novo Item AbC' where item_cardapio_id = ?");
-                stmt2.setInt(1, 7);
+                PreparedStatement stmt2 = conn.prepareStatement("update carrinho set observacoes = 'Com ketchup' where carrinho_id = ?");
+                stmt2.setInt(1, 1);
                 stmt2.execute();
                 stmt2.close();
 
@@ -170,8 +170,8 @@ class DatabaseConnectionIT {
                 checkStmt.close();
             }
 
-            PreparedStatement checkStmt2 = directConnection.prepareStatement("select nome from item_cardapio where item_cardapio_id = ?");
-            checkStmt2.setInt(1, 7);
+            PreparedStatement checkStmt2 = directConnection.prepareStatement("select observacoes from carrinho where carrinho_id = ?");
+            checkStmt2.setInt(1, 1);
             var rs2 = checkStmt2.executeQuery();
             assertThat(rs2.next()).isTrue();
             newValue2.set(rs2.getString(1));
@@ -180,7 +180,7 @@ class DatabaseConnectionIT {
         }
 
         assertThat(newValue1.get()).isEqualTo("Novo Nome XYZ");
-        assertThat(newValue2.get()).isEqualTo("Novo Item AbC");
+        assertThat(newValue2.get()).isEqualTo("Com ketchup");
     }
 
 

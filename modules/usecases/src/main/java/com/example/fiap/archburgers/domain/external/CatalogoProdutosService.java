@@ -9,5 +9,5 @@ import java.util.List;
  * Representa comunicação com o microsserviço Catálogo de Produtos (cardápio)
  */
 public interface CatalogoProdutosService {
-    ItemCardapio findById(int id);
+    ItemCardapio findAll();
 }
