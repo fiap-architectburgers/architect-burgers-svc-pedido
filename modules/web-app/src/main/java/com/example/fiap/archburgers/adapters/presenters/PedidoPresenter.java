@@ -3,7 +3,7 @@ package com.example.fiap.archburgers.adapters.presenters;
 import com.example.fiap.archburgers.adapters.dto.ItemPedidoDto;
 import com.example.fiap.archburgers.adapters.dto.PedidoDto;
 import com.example.fiap.archburgers.adapters.dto.ValorMonetarioDto;
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.utils.DateUtils;
 import com.example.fiap.archburgers.domain.valueobjects.PedidoDetalhe;
 

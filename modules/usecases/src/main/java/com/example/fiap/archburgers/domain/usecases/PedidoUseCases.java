@@ -4,7 +4,7 @@ import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.Pedido;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
 import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;

@@ -1,5 +1,6 @@
 package com.example.fiap.archburgers.domain.entities;
 
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
 import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
 import org.junit.jupiter.api.BeforeEach;

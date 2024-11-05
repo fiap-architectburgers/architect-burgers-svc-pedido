@@ -1,9 +1,8 @@
-package com.example.fiap.archburgers.domain.entities;
+package com.example.fiap.archburgers.domain.external;
 
 import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
 import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 

@@ -70,12 +70,12 @@
         </insert>
         <insert tableName="pedido_item">
             <column name="pedido_id" value="2"/>
-            <column name="item_cardapio_id" value="1"/>
+            <column name="item_cardapio_id" value="3"/>
             <column name="num_sequencia" value="1"/>
         </insert>
         <insert tableName="pedido_item">
             <column name="pedido_id" value="2"/>
-            <column name="item_cardapio_id" value="5"/>
+            <column name="item_cardapio_id" value="7"/>
             <column name="num_sequencia" value="2"/>
         </insert>
 

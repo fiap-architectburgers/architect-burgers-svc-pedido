@@ -40,16 +40,17 @@ public class ClienteRepositoryJdbcImpl implements ClienteDataSource {
              var stmt = connection.prepareStatement(SQL_SELECT_CLIENTE_BY_CPF)) {
             stmt.setString(1, cpf.cpfNum());
 
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
 
-            if (!rs.next())
-                return null;
+                if (!rs.next())
+                    return null;
 
-            return new Cliente(
-                    new IdCliente(rs.getInt("cliente_id")),
-                    rs.getString("nome"),
-                    new Cpf(rs.getString("cpf")),
-                    rs.getString("email"));
+                return new Cliente(
+                        new IdCliente(rs.getInt("cliente_id")),
+                        rs.getString("nome"),
+                        new Cpf(rs.getString("cpf")),
+                        rs.getString("email"));
+            }
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
         }
@@ -61,16 +62,16 @@ public class ClienteRepositoryJdbcImpl implements ClienteDataSource {
              var stmt = connection.prepareStatement(SQL_SELECT_CLIENTE_BY_ID)) {
             stmt.setInt(1, id);
 
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next())
+                    return null;
 
-            if (!rs.next())
-                return null;
-
-            return new Cliente(
-                    new IdCliente(rs.getInt("cliente_id")),
-                    rs.getString("nome"),
-                    new Cpf(rs.getString("cpf")),
-                    rs.getString("email"));
+                return new Cliente(
+                        new IdCliente(rs.getInt("cliente_id")),
+                        rs.getString("nome"),
+                        new Cpf(rs.getString("cpf")),
+                        rs.getString("email"));
+            }
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
         }
@@ -84,17 +85,16 @@ public class ClienteRepositoryJdbcImpl implements ClienteDataSource {
             stmt.setString(2, cliente.cpf().cpfNum());
             stmt.setString(3, cliente.email());
 
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next())
+                    throw new IllegalStateException("Query was expected to return. " + SQL_INSERT_CLIENTE);
 
-            if (!rs.next())
-                throw new IllegalStateException("Query was expected to return. " + SQL_INSERT_CLIENTE);
-
-            return new Cliente(
-                    new IdCliente(rs.getInt(1)),
-                    cliente.nome(),
-                    cliente.cpf(),
-                    cliente.email());
-
+                return new Cliente(
+                        new IdCliente(rs.getInt(1)),
+                        cliente.nome(),
+                        cliente.cpf(),
+                        cliente.email());
+            }
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
         }
@@ -105,17 +105,17 @@ public class ClienteRepositoryJdbcImpl implements ClienteDataSource {
         try (var connection = databaseConnection.getConnection();
              var stmt = connection.prepareStatement(SQL_SELECT_ALL_CLIENTES)) {
 
-            ResultSet rs = stmt.executeQuery();
-
             List<Cliente> result = new ArrayList<>();
 
-            while (rs.next()) {
-                result.add(new Cliente(
-                        new IdCliente(rs.getInt("cliente_id")),
-                        rs.getString("nome"),
-                        new Cpf(rs.getString("cpf")),
-                        rs.getString("email"))
-                );
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    result.add(new Cliente(
+                            new IdCliente(rs.getInt("cliente_id")),
+                            rs.getString("nome"),
+                            new Cpf(rs.getString("cpf")),
+                            rs.getString("email"))
+                    );
+                }
             }
 
             return result;

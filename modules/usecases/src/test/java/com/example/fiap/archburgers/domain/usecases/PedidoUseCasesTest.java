@@ -8,6 +8,7 @@ import com.example.fiap.archburgers.domain.entities.*;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
 import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.external.PagamentoService;
 import com.example.fiap.archburgers.domain.external.PainelPedidos;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarPedidoParam;

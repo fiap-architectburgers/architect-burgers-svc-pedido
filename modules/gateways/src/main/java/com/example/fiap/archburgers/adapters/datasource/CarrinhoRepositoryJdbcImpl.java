@@ -13,7 +13,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @Repository
@@ -32,9 +34,8 @@ public class CarrinhoRepositoryJdbcImpl implements CarrinhoDataSource {
 
     @Language("SQL")
     private static final String SQL_SELECT_ITEMS_BY_CARRINHO = """
-                select ci.num_sequencia, item.item_cardapio_id, item.tipo, item.nome, item.descricao, item.valor
-                from item_cardapio item 
-                inner join carrinho_item ci ON ci.item_cardapio_id = item.item_cardapio_id
+                select ci.num_sequencia, ci.item_cardapio_id
+                from carrinho_item ci
                 where ci.carrinho_id = ?
                 order by ci.num_sequencia
             """.stripIndent();
@@ -76,10 +77,12 @@ public class CarrinhoRepositoryJdbcImpl implements CarrinhoDataSource {
     @Override
     public Carrinho getCarrinhoSalvoByCliente(IdCliente idCliente) {
         try (var connection = databaseConnection.getConnection();
-             var stmt = connection.prepareStatement(SQL_SELECT_CARRINHO_BY_CLIENTE)) {
+             var stmt = connection.prepareStatement(SQL_SELECT_CARRINHO_BY_CLIENTE);
+             var stmtItens = connection.prepareStatement(SQL_SELECT_ITEMS_BY_CARRINHO)) {
+
             stmt.setInt(1, idCliente.id());
 
-            return getCarrinhoRecordSet(stmt);
+            return getCarrinhoRecordSet(stmt, stmtItens);
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
         }
@@ -88,10 +91,11 @@ public class CarrinhoRepositoryJdbcImpl implements CarrinhoDataSource {
     @Override
     public Carrinho getCarrinho(int idCarrinho) {
         try (var connection = databaseConnection.getConnection();
-             var stmt = connection.prepareStatement(SQL_SELECT_CARRINHO_BY_ID)) {
+             var stmt = connection.prepareStatement(SQL_SELECT_CARRINHO_BY_ID);
+             var stmtItens = connection.prepareStatement(SQL_SELECT_ITEMS_BY_CARRINHO)) {
             stmt.setInt(1, idCarrinho);
 
-            return getCarrinhoRecordSet(stmt);
+            return getCarrinhoRecordSet(stmt, stmtItens);
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
         }
@@ -192,18 +196,32 @@ public class CarrinhoRepositoryJdbcImpl implements CarrinhoDataSource {
         }
     }
 
-    private static @Nullable Carrinho getCarrinhoRecordSet(PreparedStatement stmt) throws SQLException {
+    private static @Nullable Carrinho getCarrinhoRecordSet(PreparedStatement stmt, PreparedStatement itensStatement) throws SQLException {
         ResultSet rs = stmt.executeQuery();
 
         if (!rs.next())
             return null;
 
+        int carrinhoId = rs.getInt("carrinho_id");
+
         int rsIdCliente = rs.getInt("id_cliente_identificado");
 
-        return new Carrinho(rs.getInt("carrinho_id"),
+        List<ItemPedido> itens = new ArrayList<>();
+
+        itensStatement.setInt(1, carrinhoId);
+        try (ResultSet rsItens = itensStatement.executeQuery()) {
+            while (rsItens.next()) {
+                itens.add(new ItemPedido(
+                        rsItens.getInt("num_sequencia"),
+                        rsItens.getInt("item_cardapio_id")
+                ));
+            }
+        }
+
+        return new Carrinho(carrinhoId,
                 rsIdCliente > 0 ? new IdCliente(rsIdCliente) : null,
                 rs.getString("nome_cliente_nao_identificado"),
-                Collections.emptyList(),
+                itens,
                 rs.getString("observacoes"),
                 rs.getTimestamp("data_hora_criado").toLocalDateTime());
     }

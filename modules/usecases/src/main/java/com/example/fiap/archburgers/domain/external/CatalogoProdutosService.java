@@ -1,13 +1,10 @@
 package com.example.fiap.archburgers.domain.external;
 
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
-import com.example.fiap.archburgers.domain.entities.ItemPedido;
-
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Representa comunicação com o microsserviço Catálogo de Produtos (cardápio)
  */
 public interface CatalogoProdutosService {
-    ItemCardapio findAll();
+    Collection<ItemCardapio> findAll();
 }

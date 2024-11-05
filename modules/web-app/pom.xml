@@ -111,12 +111,14 @@
                     <skip>false</skip>
                     <mainClass>com.example.fiap.archburgers.ArchitectBurgersApiApplication</mainClass>
 
-                    <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,address=8008,suspend=n</jvmArguments>
+                    <jvmArguments>-agentlib:jdwp=transport=dt_socket,server=y,address=8009,suspend=n</jvmArguments>
 
                     <environmentVariables>
                         <archburgers.datasource.dbUrl>jdbc:postgresql://localhost/archburgers_svc_pedido?autoReconnect=true</archburgers.datasource.dbUrl>
                         <archburgers.datasource.dbUser>burger_user_pedido</archburgers.datasource.dbUser>
                         <archburgers.datasource.dbPass>burgerYeah</archburgers.datasource.dbPass>
+
+                        <archburgers.integration.cardapio.ApiUrl>http://localhost:8090/cardapio</archburgers.integration.cardapio.ApiUrl>
 
                         <archburgers.integration.aws.region>us-east-1</archburgers.integration.aws.region>
                         <archburgers.integration.cognito.userPoolId>us-east-1_222222222</archburgers.integration.cognito.userPoolId>

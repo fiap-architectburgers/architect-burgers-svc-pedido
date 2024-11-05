@@ -36,7 +36,7 @@ POST {{baseUrl}}/carrinho
 Content-Type: application/json
 
 {
-  "nomeCliente": "Gilmar"
+
 }
 
 ###
@@ -59,7 +59,7 @@ POST {{baseUrl}}/carrinho
 Content-Type: application/json
 
 {
-  "nomeCliente": "Gilmar"
+  "nomeCliente": "Priscila"
 }
 
 
@@ -69,11 +69,11 @@ Content-Type: application/json
 ###
 # @name Consultar carrinho atual
 # # # (URL param é o ID do carrinho)
-GET {{baseUrl}}/carrinho/5
+GET {{baseUrl}}/carrinho/2
 
 ###
 # @name Consulta itens do cardápio
-GET {{baseUrl}}/cardapio
+GET {{url_Servico_Cardapio}}/cardapio
 
 ###
 # @name Add Item ao Carrinho
@@ -82,19 +82,19 @@ POST {{baseUrl}}/carrinho/2
 Content-Type: application/json
 
 {
-  "idItemCardapio": 4
+  "idItemCardapio": 5
 }
 
 ###
 # @name Excluir itens do Carrinho
 # # # O segundo parâmetro é o número de sequência do item no carrinho
-DELETE {{baseUrl}}/carrinho/5/itens/2
+DELETE {{baseUrl}}/carrinho/2/itens/1
 Content-Type: application/json
 
 
 ###
 # @name Set observacoes no carrinho
-PUT {{baseUrl}}/carrinho/5/obs
+PUT {{baseUrl}}/carrinho/2/obs
 Content-Type: application/json
 
 {

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -56,9 +57,8 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
 
     @Language("SQL")
     private static final String SQL_SELECT_ITEMS_BY_PEDIDO = """
-                select pi.num_sequencia, item.item_cardapio_id, item.tipo, item.nome, item.descricao, item.valor
-                from item_cardapio item
-                inner join pedido_item pi ON pi.item_cardapio_id = item.item_cardapio_id
+                select pi.num_sequencia, pi.item_cardapio_id
+                from pedido_item pi
                 where pi.pedido_id = ?
                 order by pi.num_sequencia
             """.stripIndent();
@@ -100,15 +100,16 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
     @Override
     public Pedido getPedido(int idPedido) {
         try (var connection = databaseConnection.getConnection();
-             var stmt = connection.prepareStatement(SQL_SELECT_PEDIDO_BY_ID)) {
+             var stmt = connection.prepareStatement(SQL_SELECT_PEDIDO_BY_ID);
+             var stmtItens = connection.prepareStatement(SQL_SELECT_ITEMS_BY_PEDIDO)) {
             stmt.setInt(1, idPedido);
 
-            ResultSet rs = stmt.executeQuery();
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next())
+                    return null;
 
-            if (!rs.next())
-                return null;
-
-            return pedidoFromResultSet(rs);
+                return pedidoFromResultSet(rs, stmtItens);
+            }
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
         }
@@ -132,23 +133,25 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
             stmt.setString(5, pedido.formaPagamento().codigo());
             stmt.setObject(6, pedido.dataHoraPedido());
 
-            var rs = stmt.executeQuery();
+            int pedidoId;
 
-            if (!rs.next()) {
-                throw new IllegalStateException("Unexpected state, query should return");
+            try (var rs = stmt.executeQuery()) {
+                if (!rs.next()) {
+                    throw new IllegalStateException("Unexpected state, query should return");
+                }
+
+                pedidoId = rs.getInt(1);
             }
-
-            var id = rs.getInt(1);
 
             for (ItemPedido item : pedido.itens()) {
                 stmtItem.clearParameters();
-                stmtItem.setInt(1, id);
+                stmtItem.setInt(1, pedidoId);
                 stmtItem.setInt(2, item.idItemCardapio());
                 stmtItem.setInt(3, item.numSequencia());
                 stmtItem.executeUpdate();
             }
 
-            return pedido.withId(id);
+            return pedido.withId(pedidoId);
 
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);
@@ -166,7 +169,8 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
         }
 
         try (var connection = databaseConnection.getConnection();
-             var stmt = connection.prepareStatement(sql)) {
+             var stmt = connection.prepareStatement(sql);
+             var stmtItens = connection.prepareStatement(SQL_SELECT_ITEMS_BY_PEDIDO)) {
 
             for (int i = 0; i < filtroStatus.size(); i++) {
                 stmt.setString(i + 1, filtroStatus.get(i).name());
@@ -176,11 +180,12 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
                 stmt.setObject(filtroStatus.size() + 1, olderThan);
             }
 
-            ResultSet rs = stmt.executeQuery();
             List<Pedido> result = new ArrayList<>();
 
-            while (rs.next()) {
-                result.add(pedidoFromResultSet(rs));
+            try(ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    result.add(pedidoFromResultSet(rs, stmtItens));
+                }
             }
 
             return result;
@@ -203,7 +208,9 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
         }
     }
 
-    private static @NotNull Pedido pedidoFromResultSet(ResultSet rs) throws SQLException {
+    private static @NotNull Pedido pedidoFromResultSet(ResultSet rs, PreparedStatement itemStatement) throws SQLException {
+        int pedidoId = rs.getInt("pedido_id");
+
         var idClienteIdentificado = rs.getInt("id_cliente_identificado");
 
         IdFormaPagamento formaPagamento;
@@ -213,18 +220,30 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
             throw new RuntimeException("Registro inconsistente! formaPagamento=" + rs.getString("forma_pagamento"));
         }
 
-        StatusPedido status = null;
+        StatusPedido status;
         try {
             status = StatusPedido.valueOf(rs.getString("status"));
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Registro inconsistente! status=" + rs.getString("status"));
         }
 
+        List<ItemPedido> itens = new ArrayList<>();
+
+        itemStatement.setInt(1, pedidoId);
+        try (ResultSet rsItens = itemStatement.executeQuery()) {
+            while (rsItens.next()) {
+                itens.add(new ItemPedido(
+                        rsItens.getInt("num_sequencia"),
+                        rsItens.getInt("item_cardapio_id")
+                ));
+            }
+        }
+
         return Pedido.pedidoRecuperado(
-                rs.getInt("pedido_id"),
+                pedidoId,
                 idClienteIdentificado > 0 ? new IdCliente(idClienteIdentificado) : null,
                 rs.getString("nome_cliente_nao_identificado"),
-                Collections.emptyList(),
+                itens,
                 rs.getString("observacoes"),
                 status,
                 formaPagamento,

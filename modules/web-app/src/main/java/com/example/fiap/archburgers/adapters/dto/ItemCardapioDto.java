@@ -1,6 +1,6 @@
 package com.example.fiap.archburgers.adapters.dto;
 
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.utils.StringUtils;
 import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
 import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;

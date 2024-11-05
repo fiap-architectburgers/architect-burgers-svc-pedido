@@ -2,7 +2,7 @@ package com.example.fiap.archburgers.adapters.presenters;
 
 import com.example.fiap.archburgers.adapters.dto.PagamentoDto;
 import com.example.fiap.archburgers.adapters.dto.ValorMonetarioDto;
-import com.example.fiap.archburgers.domain.entities.Pagamento;
+import com.example.fiap.archburgers.domain.external.Pagamento;
 import com.example.fiap.archburgers.domain.utils.DateUtils;
 
 public class PagamentoPresenter {

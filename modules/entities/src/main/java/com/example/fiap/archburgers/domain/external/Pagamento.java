@@ -1,4 +1,4 @@
-package com.example.fiap.archburgers.domain.entities;
+package com.example.fiap.archburgers.domain.external;
 
 import com.example.fiap.archburgers.domain.valueobjects.IdFormaPagamento;
 import com.example.fiap.archburgers.domain.valueobjects.StatusPagamento;

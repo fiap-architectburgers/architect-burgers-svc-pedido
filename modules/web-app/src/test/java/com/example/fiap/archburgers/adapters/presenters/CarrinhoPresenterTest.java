@@ -5,7 +5,7 @@ import com.example.fiap.archburgers.adapters.dto.ItemPedidoDto;
 import com.example.fiap.archburgers.adapters.dto.ValorMonetarioDto;
 import com.example.fiap.archburgers.adapters.testUtils.TestLocale;
 import com.example.fiap.archburgers.domain.entities.Carrinho;
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.ItemPedido;
 import com.example.fiap.archburgers.domain.valueobjects.CarrinhoDetalhe;
 import com.example.fiap.archburgers.domain.valueobjects.IdCliente;

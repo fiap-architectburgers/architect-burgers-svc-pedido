@@ -6,15 +6,14 @@ import org.jetbrains.annotations.VisibleForTesting;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class RealDatabaseTestHelper {
-    private PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
+    private final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>(
             "postgres:12-alpine"
     );
 
     public void beforeAll() throws Exception {
         postgres.start();
 
-        new DatabaseMigration(postgres.getDriverClassName(),
-                postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword()).runMigrations();
+        new DatabaseMigration(getConnectionPool()).runMigrations();
     }
 
     public void afterAll() {
@@ -22,8 +21,7 @@ public class RealDatabaseTestHelper {
     }
 
     public DatabaseConnection getConnectionPool() {
-        return new DatabaseConnection(postgres.getDriverClassName(),
-                postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+        return new DatabaseConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
     }
 
     @VisibleForTesting

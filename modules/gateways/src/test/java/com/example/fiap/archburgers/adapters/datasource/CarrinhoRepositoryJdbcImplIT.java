@@ -1,11 +1,8 @@
 package com.example.fiap.archburgers.adapters.datasource;
 
 import com.example.fiap.archburgers.domain.entities.Carrinho;
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.ItemPedido;
 import com.example.fiap.archburgers.domain.valueobjects.IdCliente;
-import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
-import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
 import com.example.fiap.archburgers.testUtils.RealDatabaseTestHelper;
 import org.junit.jupiter.api.*;
 
@@ -65,6 +62,10 @@ class CarrinhoRepositoryJdbcImplIT {
 
         assertThat(carrinhoSalvo.observacoes()).isEqualTo("Sem cebola");
         assertThat(carrinhoSalvo.dataHoraCarrinhoCriado()).isEqualTo(LocalDateTime.of(2024, 4, 30, 15, 32, 58));
+
+        assertThat(carrinhoSalvo.itens()).hasSize(2);
+        assertThat(carrinhoSalvo.itens()).contains(new ItemPedido(1, 1));
+        assertThat(carrinhoSalvo.itens()).contains(new ItemPedido(2, 3));
     }
 
     @Test
@@ -78,6 +79,10 @@ class CarrinhoRepositoryJdbcImplIT {
 
         assertThat(carrinhoSalvo.observacoes()).isEqualTo("Sem cebola");
         assertThat(carrinhoSalvo.dataHoraCarrinhoCriado()).isEqualTo(LocalDateTime.of(2024, 4, 30, 15, 32, 58));
+
+        assertThat(carrinhoSalvo.itens()).hasSize(2);
+        assertThat(carrinhoSalvo.itens()).contains(new ItemPedido(1, 1));
+        assertThat(carrinhoSalvo.itens()).contains(new ItemPedido(2, 3));
     }
 
     @Test

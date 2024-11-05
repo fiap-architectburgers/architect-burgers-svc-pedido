@@ -2,7 +2,7 @@ package com.example.fiap.archburgers.adapters.presenters;
 
 import com.example.fiap.archburgers.adapters.dto.ItemCardapioDto;
 import com.example.fiap.archburgers.adapters.dto.ValorMonetarioDto;
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 
 public class ItemCardapioPresenter {
     public static ItemCardapioDto entityToPresentationDto(ItemCardapio itemCardapio) {

@@ -1,6 +1,6 @@
 package com.example.fiap.archburgers.domain.entities;
 
-import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
+import com.example.fiap.archburgers.domain.external.Pagamento;
 import com.example.fiap.archburgers.domain.valueobjects.*;
 import org.junit.jupiter.api.Test;
 

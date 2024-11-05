@@ -1,7 +1,7 @@
 package com.example.fiap.archburgers.domain.valueobjects;
 
 import com.example.fiap.archburgers.domain.entities.Carrinho;
-import com.example.fiap.archburgers.domain.entities.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 
 import java.util.Map;
 
