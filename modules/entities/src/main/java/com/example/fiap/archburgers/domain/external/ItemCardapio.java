@@ -12,10 +12,6 @@ public record ItemCardapio(@NotNull Integer id,
                            @NotNull String descricao,
                            @NotNull ValorMonetario valor) {
 
-    public ItemCardapio withId(Integer newId) {
-        return new ItemCardapio(newId, tipo, nome, descricao, valor);
-    }
-
     public static ValorMonetario somarValores(List<ItemCardapio> itens) {
         if (itens == null || itens.isEmpty()) {
             return ValorMonetario.ZERO;

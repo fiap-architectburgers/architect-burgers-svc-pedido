@@ -70,6 +70,11 @@ public record Cpf(String cpfNum) {
     }
 
     @Override
+    public int hashCode() {
+        return Objects.hashCode(cpfNum);
+    }
+
+    @Override
     public String toString() {
         return "CPF{" + cpfNum + '}';
     }

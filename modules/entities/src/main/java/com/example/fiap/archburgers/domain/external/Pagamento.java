@@ -20,29 +20,4 @@ public record Pagamento(
         @Nullable String idPedidoSistemaExterno
 ) {
 
-    public static Pagamento registroInicial(@NotNull Integer idPedido,
-                                            @NotNull IdFormaPagamento formaPagamento,
-                                            @NotNull ValorMonetario valor,
-                                            @NotNull LocalDateTime dataHora,
-                                            @Nullable String codigoPagamentoCliente,
-                                            @Nullable String idPedidoSistemaExterno) {
-        return new Pagamento(null, idPedido, formaPagamento, StatusPagamento.PENDENTE,
-                valor, dataHora, dataHora,
-                codigoPagamentoCliente, idPedidoSistemaExterno);
-    }
-
-    public Pagamento finalizar(@NotNull LocalDateTime dataHora) {
-        return new Pagamento(id, idPedido, formaPagamento, StatusPagamento.FINALIZADO,
-                valor, dataHoraCriacao, dataHora, codigoPagamentoCliente, idPedidoSistemaExterno);
-    }
-
-    public Pagamento finalizar(@NotNull LocalDateTime dataHora, @NotNull String newIdSistemaExterno) {
-        return new Pagamento(id, idPedido, formaPagamento, StatusPagamento.FINALIZADO,
-                valor, dataHoraCriacao, dataHora, codigoPagamentoCliente, newIdSistemaExterno);
-    }
-
-    public Pagamento withId(int newId) {
-        return new Pagamento(newId, idPedido, formaPagamento, status, valor, dataHoraCriacao, dataHoraAtualizacao,
-                codigoPagamentoCliente, idPedidoSistemaExterno);
-    }
 }

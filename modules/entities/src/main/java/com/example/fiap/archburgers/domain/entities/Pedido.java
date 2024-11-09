@@ -158,10 +158,6 @@ public final class Pedido {
         return new Pedido(newId, idClienteIdentificado, nomeClienteNaoIdentificado, itens, observacoes, status, formaPagamento, dataHoraPedido);
     }
 
-    public Pedido withItens(List<ItemPedido> newItens) {
-        return new Pedido(id, idClienteIdentificado, nomeClienteNaoIdentificado, newItens, observacoes, status, formaPagamento, dataHoraPedido);
-    }
-
     public @Nullable Integer id() {
         return id;
     }

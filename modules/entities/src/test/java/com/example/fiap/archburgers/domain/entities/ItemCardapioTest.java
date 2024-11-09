@@ -55,6 +55,16 @@ class ItemCardapioTest {
         ))).isEqualTo(new ValorMonetario(new BigDecimal("46.25")));
     }
 
+    @Test
+    void equality() {
+        var item2 = new ItemCardapio(21, TipoItemCardapio.LANCHE, "Hamburger Vegetariano",
+                "Hamburger de ervilha com queijo vegano",
+                new ValorMonetario("23.50"));
+
+        assertThat(item2.equals(itemCardapio)).isTrue();
+        assertThat(item2.hashCode()).isEqualTo(itemCardapio.hashCode());
+    }
+
     private ItemCardapio createDummyItemWithValor(String valorStr) {
         return new ItemCardapio(1, TipoItemCardapio.LANCHE, "Dummy",
                 "Dummy",

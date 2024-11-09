@@ -41,4 +41,25 @@ class ValorMonetarioTest {
         assertThat(new ValorMonetario("25.98")
                 .somar(new ValorMonetario("10.5"))).isEqualTo(new ValorMonetario("36.48"));
     }
+
+    @Test
+    void asBigDecimal() {
+        assertThat(new ValorMonetario("25.98").asBigDecimal()).isEqualTo(new BigDecimal("25.98"));
+        assertThat(new ValorMonetario("123456.90").asBigDecimal()).isEqualTo(new BigDecimal("123456.90"));
+        assertThat(new ValorMonetario("13.00").asBigDecimal()).isEqualTo(new BigDecimal("13.00"));
+    }
+
+    @Test
+    void testEqualsAndHashCode() {
+        ValorMonetario valor1 = new ValorMonetario("25.98");
+        ValorMonetario valor2 = new ValorMonetario("25.98");
+
+        assertThat(valor1).isEqualTo(valor2);
+        assertThat(valor1.hashCode()).isEqualTo(valor2.hashCode());
+    }
+
+    @Test
+    void testToString() {
+        assertThat(new ValorMonetario("25.98").toString()).isEqualTo("R$25.98");
+    }
 }
