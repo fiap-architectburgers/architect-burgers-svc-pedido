@@ -1,5 +1,6 @@
-package com.example.fiap.archburgers.adapters.externalsystem;//import static org.junit.jupiter.api.Assertions.*;
+package com.example.fiap.archburgers.adapters.externalsystem.integration;//import static org.junit.jupiter.api.Assertions.*;
 
+import com.example.fiap.archburgers.adapters.externalsystem.CatalogoProdutosServiceImpl;
 import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.valueobjects.TipoItemCardapio;
 import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
@@ -8,7 +9,6 @@ import okhttp3.HttpUrl;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.intellij.lang.annotations.Language;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;

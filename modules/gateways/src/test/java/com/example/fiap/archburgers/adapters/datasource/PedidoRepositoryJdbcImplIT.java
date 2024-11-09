@@ -53,7 +53,7 @@ class PedidoRepositoryJdbcImplIT {
         assertThat(pedido.nomeClienteNaoIdentificado()).isEqualTo("Cliente Erasmo");
         assertThat(pedido.status()).isEqualTo(StatusPedido.RECEBIDO);
         assertThat(pedido.observacoes()).isEqualTo("Sem cebola");
-        assertThat(pedido.formaPagamento()).isEqualTo(IdFormaPagamento.DINHEIRO);
+        assertThat(pedido.formaPagamento()).isEqualTo(FORMA_PAGAMENTO_DINHEIRO);
         assertThat(pedido.dataHoraPedido()).isEqualTo(LocalDateTime.of(2024, 5, 18, 15, 30, 12));
 
         assertThat(pedido.itens()).hasSize(2);
@@ -67,7 +67,7 @@ class PedidoRepositoryJdbcImplIT {
                         new ItemPedido(1, 3),
                         new ItemPedido(2, 6)
                 ), "Batatas com muito sal",
-                IdFormaPagamento.DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12)
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12)
         );
 
         var saved = repository.savePedido(pedido);
@@ -109,7 +109,7 @@ class PedidoRepositoryJdbcImplIT {
                         new ItemPedido(1, 1),
                         new ItemPedido(2, 5)
                 ), "Sem cebola", StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 18, 15, 30, 12))
         );
 
@@ -118,7 +118,7 @@ class PedidoRepositoryJdbcImplIT {
                         new ItemPedido(1, 3),
                         new ItemPedido(2, 7)
                 ), null, StatusPedido.PRONTO,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 18, 15, 30, 12))
         );
     }
@@ -135,7 +135,7 @@ class PedidoRepositoryJdbcImplIT {
                         new ItemPedido(1, 1),
                         new ItemPedido(2, 5)
                 ), "Sem cebola", StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 18, 15, 30, 12))
         );
         assertThat(indexRecebido).isGreaterThanOrEqualTo(0);
@@ -145,7 +145,7 @@ class PedidoRepositoryJdbcImplIT {
                         new ItemPedido(1, 3),
                         new ItemPedido(2, 7)
                 ), null, StatusPedido.PRONTO,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 18, 15, 30, 12))
         );
         assertThat(indexProntoNewer).isGreaterThanOrEqualTo(0);
@@ -154,7 +154,7 @@ class PedidoRepositoryJdbcImplIT {
                 List.of(
                         new ItemPedido(1, 2)
                 ), null, StatusPedido.PREPARACAO,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 17, 15, 30, 12))
         );
         assertThat(indexEmPreparacao).isGreaterThanOrEqualTo(0);
@@ -163,7 +163,7 @@ class PedidoRepositoryJdbcImplIT {
                 List.of(
                         new ItemPedido(1, 1)
                 ), null, StatusPedido.PRONTO,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 17, 14, 30, 12))
         );
         assertThat(indexProntoOlder).isGreaterThanOrEqualTo(0);
@@ -182,13 +182,13 @@ class PedidoRepositoryJdbcImplIT {
         // NOT older than ref time
         var p1 = repository.savePedido(Pedido.novoPedido(null, "Wanderley",
                 sampleItens, null,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 19, 10, 30, 12)));
 
         // OLDER than ref time
         var p2 = repository.savePedido(Pedido.novoPedido(null, "Carlinhos",
                 sampleItens, null,
-                IdFormaPagamento.DINHEIRO,
+                FORMA_PAGAMENTO_DINHEIRO,
                 LocalDateTime.of(2024, 5, 19, 10, 5, 10)));
 
         var pedidos = repository.listPedidos(List.of(StatusPedido.PAGAMENTO),
@@ -208,7 +208,7 @@ class PedidoRepositoryJdbcImplIT {
     @Test
     void updateStatus_withoutIdPagamento() throws SQLException {
         var pedido = Pedido.novoPedido(null, "Wanderley", sampleItens, "Lanche sem cebola",
-                IdFormaPagamento.DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12));
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12));
 
         var saved = repository.savePedido(pedido);
 
@@ -258,4 +258,6 @@ class PedidoRepositoryJdbcImplIT {
     private List<ItemPedido> sampleItens = List.of(
             new ItemPedido(1, 1)
     );
+
+    private static final IdFormaPagamento FORMA_PAGAMENTO_DINHEIRO = new IdFormaPagamento("DINHEIRO");
 }

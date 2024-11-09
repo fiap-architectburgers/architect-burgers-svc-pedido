@@ -1,7 +1,10 @@
 package com.example.fiap.archburgers.domain.entities;
 
 import com.example.fiap.archburgers.domain.external.Pagamento;
-import com.example.fiap.archburgers.domain.valueobjects.*;
+import com.example.fiap.archburgers.domain.valueobjects.IdFormaPagamento;
+import com.example.fiap.archburgers.domain.valueobjects.StatusPagamento;
+import com.example.fiap.archburgers.domain.valueobjects.StatusPedido;
+import com.example.fiap.archburgers.domain.valueobjects.ValorMonetario;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -20,7 +23,7 @@ class PedidoTest {
     void validar() {
         var p = Pedido.pedidoRecuperado(123, null, "Cliente José",
                 sampleItens, null, StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.now());
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
         var newP = p.validar();
 
@@ -31,7 +34,7 @@ class PedidoTest {
     void validar_statusInvalido() {
         var p = Pedido.pedidoRecuperado(123, null, "Cliente José",
                 sampleItens, null, StatusPedido.PRONTO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.now());
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
         assertThat(
                 assertThrows(IllegalArgumentException.class, p::validar)
@@ -42,7 +45,7 @@ class PedidoTest {
     void cancelar() {
         var p = Pedido.pedidoRecuperado(123, null, "Cliente José",
                 sampleItens, null, StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.now());
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
         var newP = p.cancelar();
 
@@ -53,7 +56,7 @@ class PedidoTest {
     void setPronto() {
         var p = Pedido.pedidoRecuperado(123, null, "Cliente José",
                 sampleItens, null, StatusPedido.PREPARACAO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.now());
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
         var newP = p.setPronto();
 
@@ -64,10 +67,10 @@ class PedidoTest {
     void confirmarPagamento() {
         var p = Pedido.pedidoRecuperado(123, null, "Cliente José",
                 sampleItens, null, StatusPedido.PAGAMENTO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.now());
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
         var pagamento = new Pagamento(44, 123,
-                IdFormaPagamento.DINHEIRO, StatusPagamento.FINALIZADO,
+                FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.FINALIZADO,
                 new ValorMonetario("19.90"), LocalDateTime.now(),
                 LocalDateTime.now(), null, null);
 
@@ -75,4 +78,6 @@ class PedidoTest {
 
         assertThat(newP.status()).isEqualTo(StatusPedido.RECEBIDO);
     }
+
+    private static final IdFormaPagamento FORMA_PAGAMENTO_DINHEIRO = new IdFormaPagamento("DINHEIRO");
 }

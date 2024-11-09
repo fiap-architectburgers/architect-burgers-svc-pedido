@@ -78,7 +78,6 @@ public class CatalogoProdutosServiceImpl implements CatalogoProdutosService {
             throw new RuntimeException("Error in cardapio request: " + response + " -- " + body);
         }
 
-        // Parse the body contents (JSON) to a Collection<ItemCardapio> using Jackson Object Mapper
         try {
             return mapper.readValue(body, new TypeReference<>() {});
         } catch (JsonProcessingException e) {

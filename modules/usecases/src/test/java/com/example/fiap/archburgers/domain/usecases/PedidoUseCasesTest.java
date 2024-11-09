@@ -105,12 +105,12 @@ class PedidoUseCasesTest {
                 "Mesmo Cliente", new Cpf("12332112340"), "mesmo.cliente@example.com"));
 
         when(clock.localDateTime()).thenReturn(dateTime);
-        when(pagamentoService.validarFormaPagamento("DINHEIRO")).thenReturn(IdFormaPagamento.DINHEIRO);
+        when(pagamentoService.validarFormaPagamento("DINHEIRO")).thenReturn(FORMA_PAGAMENTO_DINHEIRO);
 
         when(catalogoProdutosLocal.findAll(itensPedido)).thenReturn(detalhesItensPedido);
 
         var expectedPedido = Pedido.novoPedido(new IdCliente(25), null, itensPedido,
-                "Lanche sem cebola", IdFormaPagamento.DINHEIRO, dateTime);
+                "Lanche sem cebola", FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         when(pedidoGateway.savePedido(expectedPedido)).thenReturn(expectedPedido.withId(33));
 
@@ -136,7 +136,7 @@ class PedidoUseCasesTest {
                         LocalDateTime.of(2024, 5, 18, 14, 0))
         );
 
-        when(pagamentoService.validarFormaPagamento("DINHEIRO")).thenReturn(IdFormaPagamento.DINHEIRO);
+        when(pagamentoService.validarFormaPagamento("DINHEIRO")).thenReturn(FORMA_PAGAMENTO_DINHEIRO);
 
         assertThat(
                 assertThrows(DomainPermissionException.class, () -> pedidoUseCases.criarPedido(
@@ -157,7 +157,7 @@ class PedidoUseCasesTest {
 
         var pedido = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
                 itensPedido, "Lanche sem cebola", StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         when(pedidoGateway.getPedido(42)).thenReturn(pedido);
 
@@ -165,7 +165,7 @@ class PedidoUseCasesTest {
 
         var expectedNewPedido = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
                 itensPedido, "Lanche sem cebola", StatusPedido.PREPARACAO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         ///
         var newPedido = pedidoUseCases.validarPedido(42);
@@ -188,7 +188,7 @@ class PedidoUseCasesTest {
 
         var pedido = Pedido.pedidoRecuperado(45, new IdCliente(25), null,
                 itensPedido, "Lanche sem cebola", StatusPedido.PREPARACAO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         when(pedidoGateway.getPedido(45)).thenReturn(pedido);
         when(catalogoProdutosLocal.findAll(itensPedido)).thenReturn(detalhesItensPedido);
@@ -196,7 +196,7 @@ class PedidoUseCasesTest {
         var expectedNewPedido = Pedido.pedidoRecuperado(45, new IdCliente(25), null,
                 itensPedido, "Lanche sem cebola",
                 StatusPedido.PRONTO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         ///
         var newPedido = pedidoUseCases.setPronto(45);
@@ -229,10 +229,10 @@ class PedidoUseCasesTest {
 
         Pedido pedido1 = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
                 itensPedido1, "Lanche sem cebola", StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
         Pedido pedido2 = Pedido.pedidoRecuperado(43, null, "Cliente Maria",
                 itensPedido2, null, StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         when(pedidoGateway.listPedidos(List.of(StatusPedido.RECEBIDO), null)).thenReturn(List.of(
                 pedido1,
@@ -281,10 +281,10 @@ class PedidoUseCasesTest {
 
         Pedido pedido1 = Pedido.pedidoRecuperado(42, new IdCliente(25), null,
                 itensPedido1, "Lanche sem cebola", StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
         Pedido pedido2 = Pedido.pedidoRecuperado(43, null, "Cliente Maria",
                 itensPedido2, null, StatusPedido.PREPARACAO,
-                IdFormaPagamento.DINHEIRO, dateTime);
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
 
         when(pedidoGateway.listPedidos(List.of(StatusPedido.RECEBIDO, StatusPedido.PREPARACAO), expectedLimitTime))
                 .thenReturn(List.of(pedido1, pedido2));
@@ -313,4 +313,6 @@ class PedidoUseCasesTest {
 
     ///////////
     private final LocalDateTime dateTime = LocalDateTime.of(2024, 5, 18, 15, 30);
+
+    private static final IdFormaPagamento FORMA_PAGAMENTO_DINHEIRO = new IdFormaPagamento("DINHEIRO");
 }

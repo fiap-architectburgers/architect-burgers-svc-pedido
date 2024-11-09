@@ -17,7 +17,6 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -130,7 +129,7 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
             stmt.setString(2, pedido.nomeClienteNaoIdentificado());
             stmt.setString(3, pedido.observacoes());
             stmt.setString(4, pedido.status().name());
-            stmt.setString(5, pedido.formaPagamento().codigo());
+            stmt.setString(5, pedido.formaPagamento().id());
             stmt.setObject(6, pedido.dataHoraPedido());
 
             int pedidoId;

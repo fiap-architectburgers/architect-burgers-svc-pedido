@@ -29,7 +29,7 @@ class PedidoPresenterTest {
                         new ItemPedido(1, 1000),
                         new ItemPedido(2, 1001)
                 ), "Lanche sem cebola", StatusPedido.RECEBIDO,
-                IdFormaPagamento.DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12));
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12));
 
         var detalhesItens = Map.of(
                 1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90")),
@@ -46,4 +46,6 @@ class PedidoPresenterTest {
                 "RECEBIDO", "DINHEIRO", new ValorMonetarioDto("30.90", "R$ 30,90"), 1716057012000L
         ));
     }
+
+    private static final IdFormaPagamento FORMA_PAGAMENTO_DINHEIRO = new IdFormaPagamento("DINHEIRO");
 }
