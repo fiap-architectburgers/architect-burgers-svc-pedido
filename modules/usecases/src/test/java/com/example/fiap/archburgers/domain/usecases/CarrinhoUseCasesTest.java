@@ -5,10 +5,10 @@ import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.entities.Carrinho;
 import com.example.fiap.archburgers.domain.entities.Cliente;
-import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.ItemPedido;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
+import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarCarrinhoParam;
 import com.example.fiap.archburgers.domain.utils.Clock;
 import com.example.fiap.archburgers.domain.valueobjects.*;
@@ -105,6 +105,18 @@ class CarrinhoUseCasesTest {
     }
 
     @Test
+    void criarCarrinho_clienteIdentificado_clienteNaoEncontrado() {
+        when(clienteGateway.getClienteByCpf(new Cpf("99999999999"))).thenReturn(null);
+
+        UsuarioLogado usuarioLogado = mockUsuarioLogado("99999999999");
+
+        assertThat(
+                assertThrows(RuntimeException.class, () ->
+                        carrinhoUseCases.criarCarrinho(new CriarCarrinhoParam(null), usuarioLogado))
+        ).hasMessageContaining("Registro inconsistente");
+    }
+
+    @Test
     void addItemCarrinho() {
         Carrinho carrinhoInicial = Carrinho.carrinhoSalvoClienteIdentificado(
                 88, new IdCliente(123), List.of(
@@ -143,6 +155,33 @@ class CarrinhoUseCasesTest {
     }
 
     @Test
+    void addItemCarrinho_carrinhoNaoEncontrado() {
+        when(carrinhoGateway.getCarrinho(999)).thenReturn(null);
+
+        assertThat(
+                assertThrows(RuntimeException.class, () ->
+                        carrinhoUseCases.addItem(999, 1002))
+        ).hasMessageContaining("Carrinho invalido");
+    }
+
+    @Test
+    void addItemCarrinho_catalogoItemNotFound() {
+        Carrinho carrinhoInicial = Carrinho.carrinhoSalvoClienteIdentificado(
+                88, new IdCliente(123), List.of(
+                        new ItemPedido(1, 1000)
+                ), null, dateTime);
+
+        when(carrinhoGateway.getCarrinho(88)).thenReturn(carrinhoInicial);
+
+        when(catalogoProdutosLocal.findById(1002)).thenReturn(null);
+
+        assertThat(
+                assertThrows(IllegalArgumentException.class, () ->
+                        carrinhoUseCases.addItem(88, 1002))
+        ).hasMessageContaining("Item cardapio invalido");
+    }
+
+    @Test
     void deleteItem() {
         Carrinho carrinhoInicial = Carrinho.carrinhoSalvoClienteIdentificado(
                 88, new IdCliente(123), List.of(
@@ -177,6 +216,60 @@ class CarrinhoUseCasesTest {
         verify(carrinhoGateway).salvarItemCarrinho(expectedNewCarrinho, new ItemPedido(2, 1002));
     }
 
+    @Test
+    void deleteItem_carrinhoNaoEncontrado() {
+        when(carrinhoGateway.getCarrinho(999)).thenReturn(null);
+
+        assertThat(
+                assertThrows(RuntimeException.class, () ->
+                        carrinhoUseCases.deleteItem(999, 3))
+        ).hasMessageContaining("Carrinho invalido");
+    }
+
+    @Test
+    void setObservacoes_success() {
+        String textoObservacao = "Some note";
+        Carrinho carrinhoInicial = Carrinho.carrinhoSalvoClienteIdentificado(
+                88, new IdCliente(123), List.of(new ItemPedido(1, 1000)), null, dateTime);
+        when(carrinhoGateway.getCarrinho(88)).thenReturn(carrinhoInicial);
+
+        Carrinho expectedNewCarrinho = carrinhoInicial.setObservacoes(textoObservacao);
+        when(catalogoProdutosLocal.findAll(expectedNewCarrinho.itens())).thenReturn(Map.of(1000, item1000));
+
+        CarrinhoDetalhe result = carrinhoUseCases.setObservacoes(88, textoObservacao);
+
+        assertThat(result).isEqualTo(new CarrinhoDetalhe(expectedNewCarrinho, Map.of(1000, item1000)));
+        verify(carrinhoGateway).updateObservacaoCarrinho(expectedNewCarrinho);
+    }
+
+    @Test
+    void setObservacoes_carrinhoNaoEncontrado() {
+        when(carrinhoGateway.getCarrinho(999)).thenReturn(null);
+        assertThat(
+                assertThrows(IllegalArgumentException.class, () ->
+                        carrinhoUseCases.setObservacoes(999, "Note"))
+        ).hasMessageContaining("Carrinho invalido");
+    }
+
+    @Test
+    void findCarrinho_CarrinhoExists_ReturnsCarrinhoDetalhe() {
+        when(carrinhoGateway.getCarrinho(anyInt())).thenReturn(carrinhoSalvoCliente123);
+
+        CarrinhoDetalhe result = carrinhoUseCases.findCarrinho(123);
+
+        assertThat(result).isNotNull();
+        assertThat(result.carrinho()).isEqualTo(carrinhoSalvoCliente123);
+    }
+
+    @Test
+    void findCarrinho_CarrinhoDoesNotExist_ReturnsNull() {
+        when(carrinhoGateway.getCarrinho(anyInt())).thenReturn(null);
+
+        CarrinhoDetalhe result = carrinhoUseCases.findCarrinho(123);
+
+        assertThat(result).isNull();
+    }
+
     private UsuarioLogado mockUsuarioLogado(String cpf) {
         UsuarioLogado usuarioLogado = mock(UsuarioLogado.class);
         if (cpf == null) {
@@ -203,4 +296,5 @@ class CarrinhoUseCasesTest {
     private final ItemCardapio item1000 = new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger", new ValorMonetario("25.90"));
     private final ItemCardapio item1001 = new ItemCardapio(1001, TipoItemCardapio.BEBIDA, "Refrigerante", "Refrigerante", new ValorMonetario("5.00"));
     private final ItemCardapio item1002 = new ItemCardapio(1002, TipoItemCardapio.SOBREMESA, "Sundae", "Sundae", new ValorMonetario("9.40"));
+
 }

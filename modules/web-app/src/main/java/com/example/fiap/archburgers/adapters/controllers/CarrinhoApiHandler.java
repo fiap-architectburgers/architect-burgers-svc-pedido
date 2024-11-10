@@ -7,10 +7,9 @@ import com.example.fiap.archburgers.adapters.dto.CarrinhoDto;
 import com.example.fiap.archburgers.adapters.dto.CarrinhoObservacoesDto;
 import com.example.fiap.archburgers.adapters.presenters.CarrinhoPresenter;
 import com.example.fiap.archburgers.apiutils.WebUtils;
-import com.example.fiap.archburgers.controller.CarrinhoController;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
-import com.example.fiap.archburgers.domain.entities.Carrinho;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarCarrinhoParam;
+import com.example.fiap.archburgers.domain.usecases.CarrinhoUseCases;
 import com.example.fiap.archburgers.domain.valueobjects.CarrinhoDetalhe;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
@@ -28,15 +27,15 @@ import org.springframework.web.bind.annotation.*;
 public class CarrinhoApiHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(CarrinhoApiHandler.class);
 
-    private final CarrinhoController carrinhoController;
+    private final CarrinhoUseCases carrinhoUseCases;
     private final UsuarioLogadoTokenParser usuarioLogadoTokenParser;
     private final TransactionManager transactionManager;
 
     @Autowired
-    public CarrinhoApiHandler(CarrinhoController carrinhoController,
+    public CarrinhoApiHandler(CarrinhoUseCases carrinhoUseCases,
                               UsuarioLogadoTokenParser usuarioLogadoTokenParser,
                               TransactionManager transactionManager) {
-        this.carrinhoController = carrinhoController;
+        this.carrinhoUseCases = carrinhoUseCases;
         this.usuarioLogadoTokenParser = usuarioLogadoTokenParser;
         this.transactionManager = transactionManager;
     }
@@ -49,7 +48,10 @@ public class CarrinhoApiHandler {
             if (idCarrinho == null)
                 throw new IllegalArgumentException("Path param idCarrinho missing");
 
-            var carrinho = carrinhoController.findCarrinho(idCarrinho);
+            var carrinho = carrinhoUseCases.findCarrinho(idCarrinho);
+            if (carrinho == null) {
+                return WebUtils.errorResponse(HttpStatus.NOT_FOUND, "Carrinho not found [" + idCarrinho + "]");
+            }
             return WebUtils.okResponse(CarrinhoPresenter.entityToPresentationDto(carrinho));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
@@ -75,7 +77,7 @@ public class CarrinhoApiHandler {
         try {
             UsuarioLogado usuarioLogado = usuarioLogadoTokenParser.verificarUsuarioLogado(headers);
 
-            carrinho = transactionManager.runInTransaction(() -> carrinhoController.criarCarrinho(param, usuarioLogado));
+            carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.criarCarrinho(param, usuarioLogado));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {
@@ -97,7 +99,7 @@ public class CarrinhoApiHandler {
             if (param == null)
                 throw new IllegalArgumentException("Request body missing");
 
-            carrinho = transactionManager.runInTransaction(() -> carrinhoController.addItem(
+            carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.addItem(
                     idCarrinho, param.validarIdItemCardapio()));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
@@ -122,7 +124,7 @@ public class CarrinhoApiHandler {
             if (numSequencia == null)
                 throw new IllegalArgumentException("Path param numSequencia missing");
 
-            carrinho = transactionManager.runInTransaction(() -> carrinhoController.deleteItem(
+            carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.deleteItem(
                     idCarrinho, numSequencia));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
@@ -145,7 +147,7 @@ public class CarrinhoApiHandler {
             if (param == null)
                 throw new IllegalArgumentException("Request body missing");
 
-            carrinho = transactionManager.runInTransaction(() -> carrinhoController.setObservacoes(idCarrinho, param.observacoes()));
+            carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.setObservacoes(idCarrinho, param.observacoes()));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {

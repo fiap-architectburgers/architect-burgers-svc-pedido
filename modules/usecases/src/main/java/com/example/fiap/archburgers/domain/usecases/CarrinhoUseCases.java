@@ -125,7 +125,7 @@ public class CarrinhoUseCases {
     public CarrinhoDetalhe findCarrinho(int idCarrinho) {
         var carrinho = carrinhoGateway.getCarrinho(idCarrinho);
         if (carrinho == null) {
-            throw new IllegalArgumentException("Carrinho invalido! " + idCarrinho);
+            return null;
         }
 
         return new CarrinhoDetalhe(carrinho, catalogo.findAll(carrinho.itens()));

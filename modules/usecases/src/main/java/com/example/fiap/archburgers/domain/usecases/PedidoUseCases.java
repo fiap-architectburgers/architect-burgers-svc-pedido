@@ -4,6 +4,7 @@ import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
+import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.external.ItemCardapio;
 import com.example.fiap.archburgers.domain.entities.Pedido;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
@@ -61,7 +62,7 @@ public class PedidoUseCases {
 
         var carrinho = carrinhoGateway.getCarrinho(param.idCarrinho());
         if (carrinho == null) {
-            throw new IllegalArgumentException("Invalid idCarrinho " + param.idCarrinho());
+            throw new DomainArgumentException("Invalid idCarrinho " + param.idCarrinho());
         }
 
         if (carrinho.idClienteIdentificado() != null) {
@@ -70,7 +71,7 @@ public class PedidoUseCases {
 
             var clienteLogado = clienteGateway.getClienteByCpf(new Cpf(usuarioLogado.getCpf()));
             if (clienteLogado == null)
-                throw new RuntimeException("Registro inconsistente! Usuario logado [" + usuarioLogado.getCpf() + "] não cadastrado na base");
+                throw new IllegalStateException("Registro inconsistente! Usuario logado [" + usuarioLogado.getCpf() + "] não cadastrado na base");
 
             if (!clienteLogado.id().equals(carrinho.idClienteIdentificado())) {
                 throw new DomainPermissionException("Carrinho " + carrinho.id() + " não pertence ao cliente "

@@ -4,6 +4,7 @@ import com.example.fiap.archburgers.domain.auth.GrupoUsuario;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.entities.Cliente;
+import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
 import com.example.fiap.archburgers.domain.external.ProvedorAutenticacaoExterno;
 import com.example.fiap.archburgers.domain.usecaseparam.CadastrarClienteParam;
@@ -45,7 +46,7 @@ public class ClienteUseCases {
 
         Cliente checkExistente = clienteGateway.getClienteByCpf(param.getCpfValidado());
         if (checkExistente != null) {
-            throw new IllegalArgumentException("Cliente com CPF " + param.cpf() + " já cadastrado");
+            throw new DomainArgumentException("Cliente com CPF " + param.cpf() + " já cadastrado");
         }
         //TODO Também checar duplicidade de email
 

@@ -5,10 +5,10 @@ import com.example.fiap.archburgers.adapters.datasource.TransactionManager;
 import com.example.fiap.archburgers.adapters.dto.PedidoDto;
 import com.example.fiap.archburgers.adapters.presenters.PedidoPresenter;
 import com.example.fiap.archburgers.apiutils.WebUtils;
-import com.example.fiap.archburgers.controller.PedidoController;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarPedidoParam;
+import com.example.fiap.archburgers.domain.usecases.PedidoUseCases;
 import com.example.fiap.archburgers.domain.utils.StringUtils;
 import com.example.fiap.archburgers.domain.valueobjects.PedidoDetalhe;
 import com.example.fiap.archburgers.domain.valueobjects.StatusPedido;
@@ -28,15 +28,15 @@ import java.util.List;
 public class PedidoApiHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(PedidoApiHandler.class);
 
-    private final PedidoController pedidoController;
+    private final PedidoUseCases pedidoUseCases;
     private final UsuarioLogadoTokenParser usuarioLogadoTokenParser;
     private final TransactionManager transactionManager;
 
     @Autowired
-    public PedidoApiHandler(PedidoController pedidoController,
+    public PedidoApiHandler(PedidoUseCases pedidoUseCases,
                             UsuarioLogadoTokenParser usuarioLogadoTokenParser,
                             TransactionManager transactionManager) {
-        this.pedidoController = pedidoController;
+        this.pedidoUseCases = pedidoUseCases;
         this.usuarioLogadoTokenParser = usuarioLogadoTokenParser;
         this.transactionManager = transactionManager;
     }
@@ -52,7 +52,7 @@ public class PedidoApiHandler {
         try {
             UsuarioLogado usuarioLogado = usuarioLogadoTokenParser.verificarUsuarioLogado(headers);
 
-            pedido = transactionManager.runInTransaction(() -> pedidoController.criarPedido(param, usuarioLogado));
+            pedido = transactionManager.runInTransaction(() -> pedidoUseCases.criarPedido(param, usuarioLogado));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (DomainPermissionException dpe) {
@@ -83,11 +83,11 @@ public class PedidoApiHandler {
             boolean isFiltroAtraso = Boolean.parseBoolean(filtroAtraso);
 
             if (isFiltroAtraso) {
-                result = pedidoController.listarPedidosComAtraso();
+                result = pedidoUseCases.listarPedidosComAtraso();
             } else if (parsedFiltroStatus != null) {
-                result = pedidoController.listarPedidosByStatus(parsedFiltroStatus);
+                result = pedidoUseCases.listarPedidosByStatus(parsedFiltroStatus);
             } else {
-                result = pedidoController.listarPedidosAtivos();
+                result = pedidoUseCases.listarPedidosAtivos();
             }
 
         } catch (IllegalArgumentException iae) {
@@ -104,7 +104,7 @@ public class PedidoApiHandler {
     public ResponseEntity<PedidoDto> validarPedido(@PathVariable("idPedido") Integer idPedido) {
         PedidoDetalhe pedido;
         try {
-            pedido = transactionManager.runInTransaction(() -> pedidoController.validarPedido(idPedido));
+            pedido = transactionManager.runInTransaction(() -> pedidoUseCases.validarPedido(idPedido));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {
@@ -119,7 +119,7 @@ public class PedidoApiHandler {
     public ResponseEntity<PedidoDto> cancelarPedido(@PathVariable("idPedido") Integer idPedido) {
         PedidoDetalhe pedido;
         try {
-            pedido = transactionManager.runInTransaction(() -> pedidoController.cancelarPedido(idPedido));
+            pedido = transactionManager.runInTransaction(() -> pedidoUseCases.cancelarPedido(idPedido));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {
@@ -134,7 +134,7 @@ public class PedidoApiHandler {
     public ResponseEntity<PedidoDto> setPedidoPronto(@PathVariable("idPedido") Integer idPedido) {
         PedidoDetalhe pedido;
         try {
-            pedido = transactionManager.runInTransaction(() -> pedidoController.setPronto(idPedido));
+            pedido = transactionManager.runInTransaction(() -> pedidoUseCases.setPronto(idPedido));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {
@@ -149,7 +149,7 @@ public class PedidoApiHandler {
     public ResponseEntity<PedidoDto> finalizarPedido(@PathVariable("idPedido") Integer idPedido) {
         PedidoDetalhe pedido;
         try {
-            pedido = transactionManager.runInTransaction(() -> pedidoController.finalizarPedido(idPedido));
+            pedido = transactionManager.runInTransaction(() -> pedidoUseCases.finalizarPedido(idPedido));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {

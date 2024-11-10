@@ -4,6 +4,7 @@ import com.example.fiap.archburgers.domain.auth.GrupoUsuario;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.entities.Cliente;
+import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
 import com.example.fiap.archburgers.domain.external.ProvedorAutenticacaoExterno;
 import com.example.fiap.archburgers.domain.usecaseparam.CadastrarClienteParam;
@@ -12,7 +13,11 @@ import com.example.fiap.archburgers.domain.valueobjects.IdCliente;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
@@ -73,6 +78,21 @@ class ClienteUseCasesTest {
     }
 
     @Test
+    void getClienteByCredencial_clienteNaoEncontrado() throws DomainPermissionException {
+        var cred = mock(UsuarioLogado.class);
+        when(cred.autenticado()).thenReturn(true);
+        when(cred.getGrupo()).thenReturn(GrupoUsuario.ClienteCadastrado);
+        when(cred.getCpf()).thenReturn("12332112340");
+
+        when(clienteGateway.getClienteByCpf(new Cpf("12332112340"))).thenReturn(null);
+
+        assertThat(
+                assertThrows(RuntimeException.class,
+                        () -> clienteUseCases.getClienteByCredencial(cred))
+        ).hasMessageContaining("Registro inconsistente");
+    }
+
+    @Test
     void cadastrarCliente() {
         var expectedSalvo = new Cliente(
                 new IdCliente(16), "Dudu Hamburger", new Cpf("12332112340"), "dudu@example.com"
@@ -88,5 +108,26 @@ class ClienteUseCasesTest {
         assertThat(result).isEqualTo(expectedSalvo);
 
         verify(provedorAutenticacaoExterno).registrarCliente(expectedSalvo, "secretBurger");
+    }
+
+    @Test
+    void cadastrarCliente_clienteJaCadastrado() {
+        when(clienteGateway.getClienteByCpf(new Cpf("12332112340"))).thenReturn(new Cliente(
+                new IdCliente(16), "Dudu Hamburger", new Cpf("12332112340"), "dudu@example.com"
+        ));
+
+        assertThatThrownBy(() -> clienteUseCases.cadastrarCliente(new CadastrarClienteParam(
+                        "Dudu Hamburger", "12332112340", "dudu@example.com", "secretBurger"))
+        ).hasMessageContaining("Cliente com CPF 12332112340 já cadastrado");
+    }
+
+    @Test
+    void listTodosClientes() {
+        List<Cliente> clientes = new ArrayList<>();
+        when(clienteGateway.listarTodosClientes()).thenReturn(clientes);
+
+        List<Cliente> result = clienteUseCases.listTodosClientes();
+
+        assertThat(result).isSameAs(clientes);
     }
 }

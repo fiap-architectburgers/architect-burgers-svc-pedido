@@ -5,10 +5,10 @@ import com.example.fiap.archburgers.adapters.datasource.TransactionManager;
 import com.example.fiap.archburgers.adapters.dto.ClienteDto;
 import com.example.fiap.archburgers.adapters.dto.ClienteWithTokenDto;
 import com.example.fiap.archburgers.apiutils.WebUtils;
-import com.example.fiap.archburgers.controller.ClienteController;
 import com.example.fiap.archburgers.domain.auth.UsuarioLogado;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
 import com.example.fiap.archburgers.domain.usecaseparam.CadastrarClienteParam;
+import com.example.fiap.archburgers.domain.usecases.ClienteUseCases;
 import io.swagger.v3.oas.annotations.Operation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,15 +25,15 @@ import java.util.Map;
 public class ClienteApiHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClienteApiHandler.class);
 
-    private final ClienteController clienteController;
+    private final ClienteUseCases clienteUseCases;
     private final UsuarioLogadoTokenParser usuarioLogadoTokenParser;
     private final TransactionManager transactionManager;
 
     @Autowired
-    public ClienteApiHandler(ClienteController clienteController,
+    public ClienteApiHandler(ClienteUseCases clienteUseCases,
                              UsuarioLogadoTokenParser usuarioLogadoTokenParser,
                              TransactionManager transactionManager) {
-        this.clienteController = clienteController;
+        this.clienteUseCases = clienteUseCases;
         this.usuarioLogadoTokenParser = usuarioLogadoTokenParser;
         this.transactionManager = transactionManager;
     }
@@ -45,7 +45,7 @@ public class ClienteApiHandler {
             UsuarioLogado usuarioLogado = usuarioLogadoTokenParser.verificarUsuarioLogado(headers);
 
             return WebUtils.okResponse(ClienteWithTokenDto.fromEntity(
-                    clienteController.getClienteByCredencial(usuarioLogado), usuarioLogado.identityToken()));
+                    clienteUseCases.getClienteByCredencial(usuarioLogado), usuarioLogado.identityToken()));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (DomainPermissionException dpe) {
@@ -59,7 +59,7 @@ public class ClienteApiHandler {
     @Operation(description = "Lista todos os clientes")
     @GetMapping(path = "/clientes")
     public ResponseEntity<List<ClienteDto>> getClientes() {
-        var clientes = clienteController.listTodosClientes();
+        var clientes = clienteUseCases.listTodosClientes();
         return WebUtils.okResponse(clientes.stream().map(ClienteDto::fromEntity).toList());
     }
 
@@ -68,7 +68,7 @@ public class ClienteApiHandler {
     public ResponseEntity<ClienteDto> novoCliente(@RequestBody Map<String, String> paramMap) {
         try {
             var param = CadastrarClienteParam.fromMap(paramMap);
-            var newCliente = transactionManager.runInTransaction(() -> clienteController.cadastrarCliente(param));
+            var newCliente = transactionManager.runInTransaction(() -> clienteUseCases.cadastrarCliente(param));
             return WebUtils.okResponse(ClienteDto.fromEntity(newCliente));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
