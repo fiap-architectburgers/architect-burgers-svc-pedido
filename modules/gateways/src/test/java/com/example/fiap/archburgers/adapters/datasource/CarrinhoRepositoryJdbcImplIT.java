@@ -35,7 +35,7 @@ class CarrinhoRepositoryJdbcImplIT {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         databaseConnection = realDatabase.getConnectionPool();
         carrinhoRepository = new CarrinhoRepositoryJdbcImpl(databaseConnection);
     }
@@ -166,6 +166,25 @@ class CarrinhoRepositoryJdbcImplIT {
 
         var newCarrinho = carrinhoRepository.getCarrinho(1);
         assertThat(newCarrinho.observacoes()).isEqualTo("Sem pickles e sem muito sal na batata");
+    }
+
+    @Test
+    void deleteItensCarrinho() throws SQLException {
+        var carrinhoSalvo = carrinhoRepository.getCarrinhoSalvoByCliente(new IdCliente(2));
+        assertThat(carrinhoSalvo).isNotNull();
+
+        var currentItens = carrinhoSalvo.itens();
+        assertThat(currentItens).isNotEmpty();
+
+        carrinhoRepository.deleteItensCarrinho(carrinhoSalvo);
+
+        var afterChange = carrinhoRepository.getCarrinhoSalvoByCliente(new IdCliente(2));
+        assertThat(afterChange.itens()).isEmpty();
+
+        // Test done, but we will restore back to original state because the record is used in other tests
+        for (ItemPedido item : currentItens) {
+            carrinhoRepository.salvarItemCarrinho(afterChange, item);
+        }
     }
 
     private int[] getCounts(int idCarrinho) throws SQLException {

@@ -2,6 +2,7 @@ package com.example.fiap.archburgers.adapters.datasource;
 
 import com.example.fiap.archburgers.domain.entities.ItemPedido;
 import com.example.fiap.archburgers.domain.entities.Pedido;
+import com.example.fiap.archburgers.domain.valueobjects.IdCliente;
 import com.example.fiap.archburgers.domain.valueobjects.IdFormaPagamento;
 import com.example.fiap.archburgers.domain.valueobjects.StatusPedido;
 import com.example.fiap.archburgers.testUtils.RealDatabaseTestHelper;
@@ -34,7 +35,7 @@ class PedidoRepositoryJdbcImplIT {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         databaseConnection = realDatabase.getConnectionPool();
         repository = new PedidoRepositoryJdbcImpl(databaseConnection);
     }
@@ -62,7 +63,7 @@ class PedidoRepositoryJdbcImplIT {
     }
 
     @Test
-    void savePedido() throws SQLException {
+    void savePedido_clienteAnonimo() throws SQLException {
         var pedido = Pedido.novoPedido(null, "Wanderley", List.of(
                         new ItemPedido(1, 3),
                         new ItemPedido(2, 6)
@@ -224,6 +225,28 @@ class PedidoRepositoryJdbcImplIT {
         assertThat(statusAfter).isEqualTo("CANCELADO");
 
         delete(saved.id());
+    }
+
+    @Test
+    void createAndDeletePedido() throws SQLException {
+        var pedido = Pedido.novoPedido(new IdCliente(1), null, List.of(
+                        new ItemPedido(1, 3),
+                        new ItemPedido(2, 6)
+                ), "Batatas com muito sal",
+                FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.of(2024, 5, 18, 15, 30, 12)
+        );
+
+        var saved = repository.savePedido(pedido);
+
+        assertThat(saved.id()).isNotNull();
+        assertThat(saved.id()).isGreaterThan(1);
+
+        assertThat(saved).isEqualTo(pedido.withId(saved.id()));
+
+        repository.deletePedido(saved.id());
+
+        var afterDelete = repository.getPedido(saved.id());
+        assertThat(afterDelete).isNull();
     }
 
     private String readStatusFromDb(int idPedido) throws SQLException {

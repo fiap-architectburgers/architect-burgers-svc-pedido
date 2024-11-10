@@ -8,18 +8,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PagamentoServiceQueueApiTest {
 
-    @Test
-    void whenConstructedWithValidEnvironment_expectNoException() {
-        Environment environment = Mockito.mock(Environment.class);
-
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.sqsEndpoint")).thenReturn("validSqsEndpoint");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueName")).thenReturn("validPedidosQueueName");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueUrl")).thenReturn("validPedidosQueueUrl");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueName")).thenReturn("validPagamentosConcluidosQueueName");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueUrl")).thenReturn("validPagamentosConcluidosQueueUrl");
-
-        assertDoesNotThrow(() -> new PagamentoServiceQueueApi(environment));
-    }
+    /*
+    The unit tests are mainly for parameter error tests. Valid configuration is verified in the Integration Test
+     */
 
     @Test
     void whenConstructedWithNoEndpoint_expectException() {

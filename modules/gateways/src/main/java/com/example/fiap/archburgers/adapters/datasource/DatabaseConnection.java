@@ -23,24 +23,24 @@ public class DatabaseConnection implements TransactionManager, AutoCloseable {
 
     private final ThreadLocal<ConnectionInstance> inTransactionConnection = new ThreadLocal<>();
 
-    public DatabaseConnection(String dbUrl, String dbUser, String dbPass) {
+    public DatabaseConnection(String dbUrl, String dbUser, String dbPass) throws Exception {
         cpds = buildDataSource(dbUrl, dbUser, dbPass);
     }
 
     @Autowired
-    public DatabaseConnection(Environment environment) {
+    public DatabaseConnection(Environment environment) throws Exception {
         String dbUrlEnv = environment.getProperty("archburgers.datasource.dbUrl");
         String dbUserEnv = environment.getProperty("archburgers.datasource.dbUser");
         String dbPassEnv = environment.getProperty("archburgers.datasource.dbPass");
 
         if (dbUrlEnv == null) {
-            throw new IllegalStateException("dbUrl env is missing");
+            throw new IllegalStateException("archburgers.datasource.dbUrl env is missing");
         }
         if (dbUserEnv == null) {
-            throw new IllegalStateException("dbUser env is missing");
+            throw new IllegalStateException("archburgers.datasource.dbUser env is missing");
         }
         if (dbPassEnv == null) {
-            throw new IllegalStateException("dbPass env is missing");
+            throw new IllegalStateException("archburgers.datasource.dbPass env is missing");
         }
 
         cpds = buildDataSource(dbUrlEnv, dbUserEnv, dbPassEnv);
@@ -91,13 +91,11 @@ public class DatabaseConnection implements TransactionManager, AutoCloseable {
         return cpds.getConnection();
     }
 
-    private ComboPooledDataSource buildDataSource(String dbUrl, String dbUser, String dbPass) {
+    private ComboPooledDataSource buildDataSource(String dbUrl, String dbUser, String dbPass) throws Exception {
         ComboPooledDataSource cpds = new ComboPooledDataSource();
-        try {
-            cpds.setDriverClass(DRIVER_CLASS);
-        } catch (PropertyVetoException e) {
-            throw new RuntimeException(e);
-        }
+
+        cpds.setDriverClass(DRIVER_CLASS);
+
         cpds.setJdbcUrl(dbUrl);
         cpds.setUser(dbUser);
         cpds.setPassword(dbPass);

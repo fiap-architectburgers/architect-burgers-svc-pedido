@@ -18,12 +18,10 @@ public class DatabaseMigration implements AutoCloseable {
     private static final Logger LOGGER = LoggerFactory.getLogger(DatabaseMigration.class);
 
     private final DatabaseConnection databaseConnection;
-    private final boolean isPoolOwner;
 
     @Autowired
     public DatabaseMigration(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
-        this.isPoolOwner = false;
     }
 
     public void runMigrations() throws Exception {
@@ -41,7 +39,6 @@ public class DatabaseMigration implements AutoCloseable {
 
     @Override
     public void close() {
-        if (isPoolOwner)
-            databaseConnection.close();
+        // no-op. Currently the owner is expected to manage the connection pool
     }
 }

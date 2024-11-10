@@ -117,9 +117,15 @@ class PagamentoServiceQueueApiIT {
         assertThat(messages.stream().map(PagamentoServiceQueueApi.MessageSummary::body))
                 .containsExactlyInAnyOrder(testMessage1, testMessage2);
 
+        for (PagamentoServiceQueueApi.MessageSummary message : messages) {
+            queueApi.deleteMessagesQueueConfirmacao(message);
+        }
+
+        // Waiting past the Visibility Timeout
+        Thread.sleep(3000);
+
         messages = queueApi.receiveMessagesQueueConfirmacao();
 
-        Thread.sleep(4000);  // Waiting past the Visibility Timeout
         assertThat(messages).isEmpty();
     }
 

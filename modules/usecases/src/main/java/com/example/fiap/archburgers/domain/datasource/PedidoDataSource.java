@@ -17,5 +17,5 @@ public interface PedidoDataSource {
 
     void updateStatus(Pedido pedido);
 
-    void deletePedido(Integer idPedido);
+    void deletePedido(int idPedido);
 }

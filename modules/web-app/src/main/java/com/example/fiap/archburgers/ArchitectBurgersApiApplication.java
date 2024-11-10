@@ -16,8 +16,7 @@ public class ArchitectBurgersApiApplication {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onAppStart(ApplicationReadyEvent applicationReadyEvent) {
 
-		DatabaseMigration databaseMigration = applicationReadyEvent.getApplicationContext().getBean(DatabaseMigration.class);
-        try {
+        try (DatabaseMigration databaseMigration = applicationReadyEvent.getApplicationContext().getBean(DatabaseMigration.class)) {
             databaseMigration.runMigrations();
         } catch (Exception e) {
             throw new RuntimeException("Error running DB migration on app startup: " + e, e);

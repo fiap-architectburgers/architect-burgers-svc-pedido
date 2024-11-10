@@ -212,19 +212,9 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
 
         var idClienteIdentificado = rs.getInt("id_cliente_identificado");
 
-        IdFormaPagamento formaPagamento;
-        try {
-            formaPagamento = new IdFormaPagamento(rs.getString("forma_pagamento"));
-        } catch (SQLException e) {
-            throw new RuntimeException("Registro inconsistente! formaPagamento=" + rs.getString("forma_pagamento"));
-        }
+        IdFormaPagamento formaPagamento = new IdFormaPagamento(rs.getString("forma_pagamento"));
 
-        StatusPedido status;
-        try {
-            status = StatusPedido.valueOf(rs.getString("status"));
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("Registro inconsistente! status=" + rs.getString("status"));
-        }
+        StatusPedido status = StatusPedido.valueOf(rs.getString("status"));
 
         List<ItemPedido> itens = new ArrayList<>();
 
@@ -251,20 +241,16 @@ public class PedidoRepositoryJdbcImpl implements PedidoDataSource {
     }
 
     @Override
-    public void deletePedido(Integer idPedido) {
+    public void deletePedido(int idPedido) {
         try (var connection = databaseConnection.getConnection();
              var stmt = connection.prepareStatement(SQL_DELETE_PEDIDO);
              var stmtItem = connection.prepareStatement(SQL_DELETE_ITEM)) {
 
-            if ((idPedido != null) && (idPedido > 0)) {
-                stmt.setInt(1, idPedido);
-                stmtItem.setInt(1, idPedido);
-            } else {
-                throw new IllegalStateException("Unexpected idPedido, query should return");
-            }
+            stmt.setInt(1, idPedido);
+            stmtItem.setInt(1, idPedido);
+
             stmtItem.executeUpdate();
             stmt.executeUpdate();
-
 
         } catch (SQLException e) {
             throw new RuntimeException("(" + this.getClass().getSimpleName() + ") Database error: " + e.getMessage(), e);

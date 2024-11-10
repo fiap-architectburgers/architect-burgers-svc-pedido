@@ -31,7 +31,7 @@ class ClienteRepositoryJdbcImplIT {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         databaseConnection = realDatabase.getConnectionPool();
         repository = new ClienteRepositoryJdbcImpl(databaseConnection);
     }
@@ -83,6 +83,12 @@ class ClienteRepositoryJdbcImplIT {
     @Test
     void getClienteByCpf_notFound() {
         var cliente = repository.getClienteByCpf(new Cpf("11122233396"));
+        assertThat(cliente).isNull();
+    }
+
+    @Test
+    void getClienteById_notFound() {
+        var cliente = repository.getClienteById(654321);
         assertThat(cliente).isNull();
     }
 }

@@ -1,17 +1,19 @@
 package com.example.fiap.archburgers.adapters.datasource;
 
 import com.example.fiap.archburgers.testUtils.RealDatabaseTestHelper;
+import com.example.fiap.archburgers.testUtils.StaticEnvironment;
 import org.junit.jupiter.api.*;
+import org.springframework.core.env.Environment;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Database Integration Tests
@@ -33,7 +35,7 @@ class DatabaseConnectionIT {
     }
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         databaseConnection = realDatabase.getConnectionPool();
     }
 
@@ -251,5 +253,20 @@ class DatabaseConnectionIT {
         }
 
         assertThat(newValue1.get()).isEqualTo("Roberto Carlos"); // Revertido para valor original da Migration
+    }
+
+    @Test
+    public void getConnectionThrowsSQLException() throws Exception {
+        Environment environment = new StaticEnvironment(Map.of(
+                "archburgers.datasource.dbUrl", "jdbc:postgresql://localhost:55543/mydb",
+                "archburgers.datasource.dbUser", "user",
+                "archburgers.datasource.dbPass", "password"
+        ));
+
+        try (DatabaseConnection databaseConnection = new DatabaseConnection(environment)) {
+            assertThatThrownBy(databaseConnection::getConnection)
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Could not get DB connection");
+        }
     }
 }

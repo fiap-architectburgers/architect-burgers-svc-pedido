@@ -13,14 +13,16 @@ public class RealDatabaseTestHelper {
     public void beforeAll() throws Exception {
         postgres.start();
 
-        new DatabaseMigration(getConnectionPool()).runMigrations();
+        try (DatabaseMigration migration = new DatabaseMigration(getConnectionPool())) {
+            migration.runMigrations();
+        }
     }
 
     public void afterAll() {
         postgres.stop();
     }
 
-    public DatabaseConnection getConnectionPool() {
+    public DatabaseConnection getConnectionPool() throws Exception {
         return new DatabaseConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
     }
 
