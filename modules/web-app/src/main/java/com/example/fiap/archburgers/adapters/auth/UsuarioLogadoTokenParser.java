@@ -49,7 +49,7 @@ public class UsuarioLogadoTokenParser {
         if (identityToken == null)
             identityToken = headers.getFirst(HEADER_NAME_LOWER);
 
-        if (identityToken == null || identityToken.isBlank()) {
+        if (identityToken == null) {
             return new TokenBasedUsuarioLogado(false, null, null, null, null,
                     "IdentityToken is missing", null);
         }

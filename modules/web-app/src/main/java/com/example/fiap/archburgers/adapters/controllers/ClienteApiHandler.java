@@ -46,8 +46,6 @@ public class ClienteApiHandler {
 
             return WebUtils.okResponse(ClienteWithTokenDto.fromEntity(
                     clienteUseCases.getClienteByCredencial(usuarioLogado), usuarioLogado.identityToken()));
-        } catch (IllegalArgumentException iae) {
-            return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (DomainPermissionException dpe) {
             return WebUtils.errorResponse(HttpStatus.UNAUTHORIZED, dpe.getMessage());
         } catch (Exception e) {

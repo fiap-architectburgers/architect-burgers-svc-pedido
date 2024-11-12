@@ -27,7 +27,7 @@ public class PedidoPresenter {
                 dtoItens,
                 pedidoDetalhe.pedido().observacoes(),
                 pedidoDetalhe.pedido().status().name(),
-                pedidoDetalhe.pedido().formaPagamento().codigo(),
+                pedidoDetalhe.pedido().formaPagamento().id(),
                 ValorMonetarioDto.from(pedidoDetalhe.getValorTotal()),
                 DateUtils.toTimestamp(pedidoDetalhe.pedido().dataHoraPedido()));
     }
