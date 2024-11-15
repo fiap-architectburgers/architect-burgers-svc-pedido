@@ -41,14 +41,15 @@ class PagamentoServiceWebApiIT {
     }
 
     @Test
-    void listFormasPagamento() {
+    void listFormasPagamento() throws Exception {
         server.enqueue(new MockResponse().setBody(SAMPLE_DATA));
 
         List<IdFormaPagamento> result = webApi.listFormasPagamento();
 
         assertThat(result).containsExactlyInAnyOrder(
                 new IdFormaPagamento("DINHEIRO"),
-                new IdFormaPagamento("MERCADO_PAGO")
+                new IdFormaPagamento("MERCADO_PAGO"),
+                new IdFormaPagamento("CARTAO_MAQUINA")
         );
     }
 
@@ -72,15 +73,25 @@ class PagamentoServiceWebApiIT {
 
     @Language("json")
     private static final String SAMPLE_DATA = """
-    [
-      {
-        "id": "DINHEIRO",
-        "descricao": "Pagamento em dinheiro direto ao caixa"
-      },
-      {
-        "id": "MERCADO_PAGO",
-        "descricao": "QRCode do Mercado Pago"
-      }
-    ]
-    """;
+            [
+              {
+                "id": {
+                  "codigo": "MERCADO_PAGO"
+                },
+                "descricao": "Pagamento pelo QrCode do aplicativo Mercado Pago"
+              },
+              {
+                "id": {
+                  "codigo": "DINHEIRO"
+                },
+                "descricao": "Pagamento em dinheiro direto ao caixa"
+              },
+              {
+                "id": {
+                  "codigo": "CARTAO_MAQUINA"
+                },
+                "descricao": "Pagamento na máquina da loja"
+              }
+            ]
+            """;
 }

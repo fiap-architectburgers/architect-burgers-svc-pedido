@@ -43,7 +43,7 @@ class CatalogoProdutosServiceImplTest {
     @Test
     public void valorMonetarioDeserializer() throws Exception {
         Environment environment = new StaticEnvironment(Map.of(
-                "archburgers.integration.cardapio.ApiUrl", "http://localhost:8090/cardapio"
+                "archburgers.integration.cardapio.ApiUrl", "http://localhost:8092/cardapio"
         ));
 
         CatalogoProdutosServiceImpl service = new CatalogoProdutosServiceImpl(environment);

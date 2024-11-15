@@ -9,15 +9,15 @@ import org.jetbrains.annotations.Nullable;
 import java.time.LocalDateTime;
 
 public record Pagamento(
-        @Nullable Integer id,
-        @NotNull Integer idPedido,
-        @NotNull IdFormaPagamento formaPagamento,
-        @NotNull StatusPagamento status,
-        @NotNull ValorMonetario valor,
-        @NotNull LocalDateTime dataHoraCriacao,
-        @NotNull LocalDateTime dataHoraAtualizacao,
-        @Nullable String codigoPagamentoCliente,
-        @Nullable String idPedidoSistemaExterno
+        String idPagamento,
+        Integer idPedido,
+        IdFormaPagamento formaPagamento,
+        StatusPagamento status,
+        ValorMonetario valor,
+        LocalDateTime dataHoraCriacao,
+        LocalDateTime dataHoraAtualizacao,
+        String codigoPagamentoCliente,
+        String idPedidoSistemaExterno
 ) {
 
 }

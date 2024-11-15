@@ -29,13 +29,13 @@ public class PagamentoServiceQueueApi implements AutoCloseable {
         if (sqsEndpoint == null)
             throw new IllegalArgumentException("archburgers.integration.sqs.sqsEndpoint not set");
 
-        this.pedidosQueueName = environment.getProperty("archburgers.integration.sqs.pedidosQueueName");
+        this.pedidosQueueName = environment.getProperty("archburgers.integration.sqs.pagamentosEmAbertoQueueName");
         if (pedidosQueueName == null)
-            throw new IllegalArgumentException("archburgers.integration.sqs.pedidosQueueName not set");
+            throw new IllegalArgumentException("archburgers.integration.sqs.pagamentosEmAbertoQueueName not set");
 
-        this.pedidosQueueUrl = environment.getProperty("archburgers.integration.sqs.pedidosQueueUrl");
+        this.pedidosQueueUrl = environment.getProperty("archburgers.integration.sqs.pagamentosEmAbertoQueueUrl");
         if (pedidosQueueUrl == null)
-            throw new IllegalArgumentException("archburgers.integration.sqs.pedidosQueueUrl not set");
+            throw new IllegalArgumentException("archburgers.integration.sqs.pagamentosEmAbertoQueueUrl not set");
 
         this.pagamentosConcluidosQueueName = environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueName");
         if (pagamentosConcluidosQueueName == null)

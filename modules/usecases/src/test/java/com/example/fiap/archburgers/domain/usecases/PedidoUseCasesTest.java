@@ -7,10 +7,7 @@ import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
 import com.example.fiap.archburgers.domain.entities.*;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
-import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
-import com.example.fiap.archburgers.domain.external.ItemCardapio;
-import com.example.fiap.archburgers.domain.external.PagamentoService;
-import com.example.fiap.archburgers.domain.external.PainelPedidos;
+import com.example.fiap.archburgers.domain.external.*;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarPedidoParam;
 import com.example.fiap.archburgers.domain.utils.Clock;
 import com.example.fiap.archburgers.domain.valueobjects.*;
@@ -68,7 +65,7 @@ class PedidoUseCasesTest {
     }
 
     @Test
-    void criarPedido_invalidPagamento() {
+    void criarPedido_invalidPagamento() throws Exception {
         var usuarioLogado = mock(UsuarioLogado.class);
 
         when(pagamentoService.validarFormaPagamento("Cheque")).thenThrow(
@@ -80,7 +77,7 @@ class PedidoUseCasesTest {
     }
 
     @Test
-    void criarPedido_ok_clienteIdentificado() {
+    void criarPedido_ok_clienteIdentificado() throws Exception {
         var usuarioLogado = mockUsuarioLogado("12332112340");
 
         List<ItemPedido> itensPedido = List.of(
@@ -120,11 +117,11 @@ class PedidoUseCasesTest {
 
         assertThat(result).isEqualTo(new PedidoDetalhe(expectedPedido.withId(33), detalhesItensPedido));
 
-        verify(pagamentoService).iniciarPagamento(expectedPedido.withId(33));
+        verify(pagamentoService).iniciarPagamento(new PedidoDetalhe(expectedPedido.withId(33), detalhesItensPedido));
     }
 
     @Test
-    void criarPedido_ok_clienteAnonimo() {
+    void criarPedido_ok_clienteAnonimo() throws Exception {
         var usuarioLogado = mock(UsuarioLogado.class);
 
         List<ItemPedido> itensPedido = List.of(
@@ -161,11 +158,11 @@ class PedidoUseCasesTest {
 
         assertThat(result).isEqualTo(new PedidoDetalhe(expectedPedido.withId(33), detalhesItensPedido));
 
-        verify(pagamentoService).iniciarPagamento(expectedPedido.withId(33));
+        verify(pagamentoService).iniciarPagamento(new PedidoDetalhe(expectedPedido.withId(33), detalhesItensPedido));
     }
 
     @Test
-    void criarPedido_clienteLogadoIncorreto() {
+    void criarPedido_clienteLogadoIncorreto() throws Exception {
         var usuarioLogado = mockUsuarioLogado("12332112340");
 
         when(clienteGateway.getClienteByCpf(new Cpf("12332112340"))).thenReturn(new Cliente(new IdCliente(42),
@@ -187,7 +184,7 @@ class PedidoUseCasesTest {
     }
 
     @Test
-    void criarPedido_usuarioNaoLogado() {
+    void criarPedido_usuarioNaoLogado() throws Exception {
         var usuarioLogado = mockUsuarioLogado(null);
 
         when(carrinhoGateway.getCarrinho(12)).thenReturn(
@@ -206,7 +203,7 @@ class PedidoUseCasesTest {
     }
 
     @Test
-    void criarPedido_clienteNaoEncontrado() {
+    void criarPedido_clienteNaoEncontrado() throws Exception {
         var usuarioLogado = mockUsuarioLogado("12332112340");
 
         when(carrinhoGateway.getCarrinho(12)).thenReturn(
@@ -510,6 +507,77 @@ class PedidoUseCasesTest {
                 new PedidoDetalhe(pedido2, detalhesItensPedido2)
         );
     }
+
+    @Test
+    public void finalizarPagamento() {
+        var pagamento = new Pagamento(
+                "67326c0dbab6b22798c180a4",
+                63,
+                new IdFormaPagamento("MERCADO_PAGO"),
+                StatusPagamento.FINALIZADO,
+                new ValorMonetario("37.98"),
+                LocalDateTime.of(2024, 11, 11, 17, 41, 49),
+                LocalDateTime.of(2024, 11, 11, 17, 42, 38),
+                "00020101021243650016COM.MERCADOLIBRE020",
+                "24902326150"
+        );
+
+        var pedido = Pedido.pedidoRecuperado(63, new IdCliente(25), null,
+                List.of(new ItemPedido(1, 111)), "Lanche sem cebola", StatusPedido.PAGAMENTO,
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
+
+        when(pedidoGateway.getPedido(63)).thenReturn(pedido);
+
+        //
+        var result = pedidoUseCases.finalizarPagamento(pagamento);
+
+        var expectedPedidoPago = Pedido.pedidoRecuperado(63, new IdCliente(25), null,
+                List.of(new ItemPedido(1, 111)), "Lanche sem cebola", StatusPedido.RECEBIDO,
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
+
+        assertThat(result).isEqualTo(expectedPedidoPago);
+
+        verify(pedidoGateway).updateStatus(expectedPedidoPago);
+    }
+
+    @Test
+    void finalizarPagamento_idPedidoNull() {
+        var pagamento = new Pagamento(
+                "67326c0dbab6b22798c180a4",
+                null, // idPedido is null
+                new IdFormaPagamento("MERCADO_PAGO"),
+                StatusPagamento.FINALIZADO,
+                new ValorMonetario("37.98"),
+                LocalDateTime.of(2024, 11, 11, 17, 41, 49),
+                LocalDateTime.of(2024, 11, 11, 17, 42, 38),
+                "00020101021243650016COM.MERCADOLIBRE020",
+                "24902326150"
+        );
+
+        assertThatThrownBy(() -> pedidoUseCases.finalizarPagamento(pagamento))
+                .hasMessageContaining("Pagamento deve possuir um ID de pedido");
+    }
+
+    @Test
+    void finalizarPagamento_pedidoNotFound() {
+        var pagamento = new Pagamento(
+                "67326c0dbab6b22798c180a4",
+                63,
+                new IdFormaPagamento("MERCADO_PAGO"),
+                StatusPagamento.FINALIZADO,
+                new ValorMonetario("37.98"),
+                LocalDateTime.of(2024, 11, 11, 17, 41, 49),
+                LocalDateTime.of(2024, 11, 11, 17, 42, 38),
+                "00020101021243650016COM.MERCADOLIBRE020",
+                "24902326150"
+        );
+
+        when(pedidoGateway.getPedido(63)).thenReturn(null);
+
+        assertThatThrownBy(() -> pedidoUseCases.finalizarPagamento(pagamento))
+                .hasMessageContaining("Pedido invalido=63");
+    }
+
 
     private UsuarioLogado mockUsuarioLogado(String cpf) {
         UsuarioLogado usuarioLogado = mock(UsuarioLogado.class);

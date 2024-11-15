@@ -118,12 +118,20 @@
                         <archburgers.datasource.dbUser>burger_user_pedido</archburgers.datasource.dbUser>
                         <archburgers.datasource.dbPass>burgerYeah</archburgers.datasource.dbPass>
 
-                        <archburgers.integration.cardapio.ApiUrl>http://localhost:8090/cardapio</archburgers.integration.cardapio.ApiUrl>
+                        <archburgers.integration.cardapio.ApiUrl>http://localhost:8092/cardapio</archburgers.integration.cardapio.ApiUrl>
+                        <archburgers.integration.pagamento.ApiUrl>http://localhost:8090/pagamento/opcoes</archburgers.integration.pagamento.ApiUrl>
 
                         <archburgers.integration.aws.region>us-east-1</archburgers.integration.aws.region>
                         <archburgers.integration.cognito.userPoolId>us-east-1_222222222</archburgers.integration.cognito.userPoolId>
                         <archburgers.integration.cognito.clientId>9999999999</archburgers.integration.cognito.clientId>
                         <archburgers.integration.cognito.clientSecret>9999999999999999999999999999999999</archburgers.integration.cognito.clientSecret>
+
+                        <archburgers.integration.sqs.sqsEndpoint>http://localhost:4566</archburgers.integration.sqs.sqsEndpoint>
+                        <archburgers.integration.sqs.pagamentosEmAbertoQueueName>pedidos</archburgers.integration.sqs.pagamentosEmAbertoQueueName>
+                        <archburgers.integration.sqs.pagamentosEmAbertoQueueUrl>http://localhost:4566/000000000000/pedidos</archburgers.integration.sqs.pagamentosEmAbertoQueueUrl>
+                        <archburgers.integration.sqs.pagamentosConcluidosQueueName>pagamentos_concluidos</archburgers.integration.sqs.pagamentosConcluidosQueueName>
+                        <archburgers.integration.sqs.pagamentosConcluidosQueueUrl>http://localhost:4566/000000000000/pagamentos_concluidos</archburgers.integration.sqs.pagamentosConcluidosQueueUrl>
+
                     </environmentVariables>
                 </configuration>
             </plugin>

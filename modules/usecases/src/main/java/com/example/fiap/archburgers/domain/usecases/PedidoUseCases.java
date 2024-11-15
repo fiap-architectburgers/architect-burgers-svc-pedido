@@ -5,12 +5,9 @@ import com.example.fiap.archburgers.domain.datagateway.CarrinhoGateway;
 import com.example.fiap.archburgers.domain.datagateway.ClienteGateway;
 import com.example.fiap.archburgers.domain.datagateway.PedidoGateway;
 import com.example.fiap.archburgers.domain.exception.DomainArgumentException;
-import com.example.fiap.archburgers.domain.external.ItemCardapio;
+import com.example.fiap.archburgers.domain.external.*;
 import com.example.fiap.archburgers.domain.entities.Pedido;
 import com.example.fiap.archburgers.domain.exception.DomainPermissionException;
-import com.example.fiap.archburgers.domain.external.CatalogoProdutosLocal;
-import com.example.fiap.archburgers.domain.external.PagamentoService;
-import com.example.fiap.archburgers.domain.external.PainelPedidos;
 import com.example.fiap.archburgers.domain.usecaseparam.CriarPedidoParam;
 import com.example.fiap.archburgers.domain.utils.Clock;
 import com.example.fiap.archburgers.domain.utils.StringUtils;
@@ -20,6 +17,7 @@ import com.example.fiap.archburgers.domain.valueobjects.StatusPedido;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -50,7 +48,7 @@ public class PedidoUseCases {
         this.painelPedidos = painelPedidos;
     }
 
-    public PedidoDetalhe criarPedido(CriarPedidoParam param, UsuarioLogado usuarioLogado) throws DomainPermissionException {
+    public PedidoDetalhe criarPedido(CriarPedidoParam param, UsuarioLogado usuarioLogado) throws DomainPermissionException, Exception {
         if (param == null)
             throw new IllegalArgumentException("Parameter missing");
         if (param.idCarrinho() == null)
@@ -87,11 +85,13 @@ public class PedidoUseCases {
 
         Pedido saved = pedidoGateway.savePedido(pedido);
 
-        pagamentoService.iniciarPagamento(saved);
+        PedidoDetalhe pedidoDetalhe = new PedidoDetalhe(saved, detalheItens);
+
+        pagamentoService.iniciarPagamento(pedidoDetalhe);
 
         carrinhoGateway.deleteCarrinho(carrinho);
 
-        return new PedidoDetalhe(saved, detalheItens);
+        return pedidoDetalhe;
     }
 
     public List<PedidoDetalhe> listarPedidosByStatus(@Nullable StatusPedido filtroStatus) {
@@ -147,49 +147,21 @@ public class PedidoUseCases {
         return loadAndApply(idPedido, Pedido::finalizar);
     }
 
-//    public Pedido finalizarPagamento(int idPedido, String newIdPedidoSistemaExterno) {
-//        Pedido pedido = pedidoGateway.getPedido(idPedido);
-//
-//        if (pedido == null) {
-//            throw new DomainArgumentException("Pedido invalido=" + idPedido);
-//        }
-//
-//        Pagamento inicial = pagamentoGateway.findPagamentoByPedido(idPedido);
-//
-//        if (inicial == null) {
-//            throw new DomainArgumentException("Pagamento nao encontrado. Pedido=" + idPedido);
-//        }
-//
-//        pedido = pedido.withItens(itemCardapioGateway.findByPedido(idPedido));
-//
-//        if (inicial.status() != StatusPagamento.PENDENTE) {
-//            throw new DomainArgumentException("Pagamento nao está Pendente. Pedido=" + idPedido);
-//        }
-//
-//        LocalDateTime dataHoraPagamento = clock.localDateTime();
-//
-//        Pagamento pagamentoFinalizado;
-//        if (newIdPedidoSistemaExterno != null && !newIdPedidoSistemaExterno.equals(inicial.idPedidoSistemaExterno())) {
-//            pagamentoFinalizado = inicial.finalizar(dataHoraPagamento, newIdPedidoSistemaExterno);
-//        } else {
-//            pagamentoFinalizado = inicial.finalizar(dataHoraPagamento);
-//        }
-//
-//        var pedidoPago = pedido.confirmarPagamento(pagamentoFinalizado);
-//
-//        pagamentoGateway.updateStatus(pagamentoFinalizado);
-//
-//        pedidoGateway.updateStatus(pedidoPago);
-//
-//        return pedidoPago;
-//
-//
-//        //        var valorTotalItens = ItemCardapio.somarValores(itens.stream().map(ItemPedido::itemCardapio).toList());
-////        if (!pagamento.valor().equals(valorTotalItens)) {
-////            throw new DomainArgumentException("Valor do pagamento não corresponde aos itens do pedido. Pedido="
-////                    + valorTotalItens + ", Pago=" + pagamento.valor());
-////        }
-//    }
+    public Pedido finalizarPagamento(Pagamento pagamento) {
+        int idPedido = Objects.requireNonNull(pagamento.idPedido(), "Pagamento deve possuir um ID de pedido");
+
+        Pedido pedido = pedidoGateway.getPedido(idPedido);
+
+        if (pedido == null) {
+            throw new DomainArgumentException("Pedido invalido=" + idPedido);
+        }
+
+        var pedidoPago = pedido.confirmarPagamento(pagamento);
+
+        pedidoGateway.updateStatus(pedidoPago);
+
+        return pedidoPago;
+    }
 
     private @NotNull PedidoDetalhe loadAndApply(Integer idPedido, Function<Pedido, Pedido> update) {
         var pedido = pedidoGateway.getPedido(Objects.requireNonNull(idPedido, "ID não pode ser null"));

@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 class PagamentoTest {
 
     @Test
@@ -17,12 +15,12 @@ class PagamentoTest {
         LocalDateTime dataHoraCriacao = LocalDateTime.now();
         LocalDateTime dataHoraAtualizacao = LocalDateTime.now();
 
-        var pagamento = new Pagamento(44, 123,
+        var pagamento = new Pagamento("4455", 123,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.FINALIZADO,
                 new ValorMonetario("19.90"), dataHoraCriacao,
                 dataHoraAtualizacao, "barcode:xxx", "ABC");
 
-        Assertions.assertThat(pagamento.id()).isEqualTo(44);
+        Assertions.assertThat(pagamento.idPagamento()).isEqualTo("4455");
         Assertions.assertThat(pagamento.idPedido()).isEqualTo(123);
         Assertions.assertThat(pagamento.formaPagamento()).isEqualTo(FORMA_PAGAMENTO_DINHEIRO);
         Assertions.assertThat(pagamento.status()).isEqualTo(StatusPagamento.FINALIZADO);
@@ -38,17 +36,17 @@ class PagamentoTest {
         LocalDateTime dataHoraCriacao = LocalDateTime.now();
         LocalDateTime dataHoraAtualizacao = LocalDateTime.now();
 
-        var pagamento1 = new Pagamento(44, 123,
+        var pagamento1 = new Pagamento("4455", 123,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.FINALIZADO,
                 new ValorMonetario("19.90"), dataHoraCriacao,
                 dataHoraAtualizacao, "barcode:xxx", "ABC");
 
-        var pagamento2 = new Pagamento(44, 123,
+        var pagamento2 = new Pagamento("4455", 123,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.FINALIZADO,
                 new ValorMonetario("19.90"), dataHoraCriacao,
                 dataHoraAtualizacao, "barcode:xxx", "ABC");
 
-        var pagamento3 = new Pagamento(55, 456,
+        var pagamento3 = new Pagamento("5566", 456,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.PENDENTE,
                 new ValorMonetario("25.50"), LocalDateTime.now(),
                 LocalDateTime.now(), "barcode:yyy", "DEF");

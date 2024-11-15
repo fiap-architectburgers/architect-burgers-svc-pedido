@@ -2,10 +2,10 @@ package com.example.fiap.archburgers.adapters.externalsystem;
 
 import com.example.fiap.archburgers.domain.utils.StringUtils;
 import com.example.fiap.archburgers.domain.valueobjects.IdFormaPagamento;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PagamentoServiceWebApi {
@@ -45,7 +46,7 @@ public class PagamentoServiceWebApi {
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public List<IdFormaPagamento> listFormasPagamento() {
+    public List<IdFormaPagamento> listFormasPagamento() throws Exception {
         var webRequest = HttpRequest.newBuilder()
                 .uri(opcoesPagamentoUri)
                 .timeout(Duration.ofMinutes(1))
@@ -66,13 +67,23 @@ public class PagamentoServiceWebApi {
             throw new RuntimeException("Erro na solicitação de formas de pagamento: " + response + " -- " + body);
         }
 
-        List<IdFormaPagamento> formasPagamento;
-        try {
-            formasPagamento = mapper.readValue(body, new TypeReference<>() {});
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Dados de forma de pagamento inválidos! " + e, e);
-        }
+        return parseFormasPagamentoResponse(body);
+    }
 
-        return formasPagamento;
+    @VisibleForTesting
+    List<IdFormaPagamento> parseFormasPagamentoResponse(String body) throws Exception {
+        List<Map<?, ?>> rawData = mapper.readValue(body, new TypeReference<>() {
+        });
+        return rawData.stream().map(map -> {
+            if (map.get("id") instanceof Map<?, ?> idAsMap) {
+                if (idAsMap.get("codigo") instanceof String codigo) {
+                    return new IdFormaPagamento(codigo);
+                } else {
+                    throw new RuntimeException("Unexpected opcoes-pagamento data format. codigo is missing");
+                }
+            } else {
+                throw new RuntimeException("Unexpected opcoes-pagamento data format. id should be object");
+            }
+        }).toList();
     }
 }

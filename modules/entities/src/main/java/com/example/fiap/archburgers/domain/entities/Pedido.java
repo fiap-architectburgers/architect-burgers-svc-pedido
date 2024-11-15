@@ -111,7 +111,7 @@ public final class Pedido {
         if (pagamento == null) {
             throw new DomainArgumentException("Pagamento nulo");
         }
-        if (pagamento.id() == null) {
+        if (pagamento.idPagamento() == null) {
             throw new DomainArgumentException("Pagamento deve estar gravado");
         }
         if (status != StatusPedido.PAGAMENTO) {

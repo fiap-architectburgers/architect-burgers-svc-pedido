@@ -146,7 +146,7 @@ class PedidoTest {
                 sampleItens, null, StatusPedido.PAGAMENTO,
                 FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
-        var pagamento = new Pagamento(44, 123,
+        var pagamento = new Pagamento("4455", 123,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.FINALIZADO,
                 new ValorMonetario("19.90"), LocalDateTime.now(),
                 LocalDateTime.now(), null, null);
@@ -190,7 +190,7 @@ class PedidoTest {
                 sampleItens, null, StatusPedido.PRONTO,
                 FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
-        var pagamento = new Pagamento(44, 123,
+        var pagamento = new Pagamento("4455", 123,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.FINALIZADO,
                 new ValorMonetario("19.90"), LocalDateTime.now(),
                 LocalDateTime.now(), null, null);
@@ -206,7 +206,7 @@ class PedidoTest {
                 sampleItens, null, StatusPedido.PAGAMENTO,
                 FORMA_PAGAMENTO_DINHEIRO, LocalDateTime.now());
 
-        var pagamento = new Pagamento(44, 123,
+        var pagamento = new Pagamento("4455", 123,
                 FORMA_PAGAMENTO_DINHEIRO, StatusPagamento.PENDENTE,
                 new ValorMonetario("19.90"), LocalDateTime.now(),
                 LocalDateTime.now(), null, null);
