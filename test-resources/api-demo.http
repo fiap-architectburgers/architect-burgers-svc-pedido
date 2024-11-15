@@ -2,12 +2,13 @@
 # O serviço /cliente/conectado retorna as informações salvas do cliente.
 # Frontend deverá apresentar para o cliente para confirmação e guardar ID do cliente para o próximo passo
 #
+
 # (NOVO A PARTIR DA FASE 3)
 # É necessário passar pela Autenticação para consumir este endpoint. O Authenticator irá fornecer o IdToken no header
-# customizado IdentityToken
+# customizado IdentityToken. Sem a autenticação só é possível fazer pedido como um cliente anônimo
 ###
 # @name Identifica Cliente
-# Identificar cliente pelo CPF
+# Identificar cliente pelo login
 GET {{baseUrl}}/cliente/conectado
 Authorization: Basic dudu2@example.com burger01
 
@@ -19,9 +20,9 @@ POST {{baseUrl}}/clientes
 Content-Type: application/json
 
 {
-  "nome": "Dudu2",
+  "nome": "Dudu3",
   "cpf": "10020030169",
-  "email": "dudu2@example.com",
+  "email": "dudu3@example.com",
   "senha": "burger01"
 }
 
@@ -59,7 +60,7 @@ POST {{baseUrl}}/carrinho
 Content-Type: application/json
 
 {
-  "nomeCliente": "Priscila"
+  "nomeCliente": "Roberval"
 }
 
 
@@ -69,32 +70,32 @@ Content-Type: application/json
 ###
 # @name Consultar carrinho atual
 # # # (URL param é o ID do carrinho)
-GET {{baseUrl}}/carrinho/2
+GET {{baseUrl}}/carrinho/4
 
 ###
-# @name Consulta itens do cardápio
+# @name Consulta itens do cardápio (DIRETO NO MICROSERVIÇO CATÁLOGO DE PRODUTOS)
 GET {{url_Servico_Cardapio}}/cardapio
 
 ###
 # @name Add Item ao Carrinho
 # # # Recebe no Post o ID do item (consulta cardápio)
-POST {{baseUrl}}/carrinho/2
+POST {{baseUrl}}/carrinho/4
 Content-Type: application/json
 
 {
-  "idItemCardapio": 5
+  "idItemCardapio": 2
 }
 
 ###
 # @name Excluir itens do Carrinho
 # # # O segundo parâmetro é o número de sequência do item no carrinho
-DELETE {{baseUrl}}/carrinho/2/itens/1
+DELETE {{baseUrl}}/carrinho/4/itens/1
 Content-Type: application/json
 
 
 ###
 # @name Set observacoes no carrinho
-PUT {{baseUrl}}/carrinho/2/obs
+PUT {{baseUrl}}/carrinho/4/obs
 Content-Type: application/json
 
 {
@@ -103,20 +104,39 @@ Content-Type: application/json
 
 ###
 # ### ### ### ### Etapa 3 - checkout
-# A lista de formas de pagamento válidas é obtida no serviço de Pagamento
+
+###
+# @name Listar formas de pagamento disponíveis (DIRETO NO MICROSERVIÇO DE PAGAMENTO)
+GET {{url_Servico_Pagamento}}/pagamento/opcoes
 
 ###
 # @name Criar pedido
 # # # Esta ação irá gerar um ID de pedido, que não é igual ao ID do carrinho.
 # # # Carrinho será excluído automaticamente
+# (Enviar token de autorização válido se for pedido de cliente cadastrado)
 POST {{baseUrl}}/pedidos
 Content-Type: application/json
 Authorization: Bearer eyJraWQiOiJ0N3A5ckNOZHp3NGhNNEk3TGc2eDNDVVlcL1o4eTh4R0NReHYxM0xnbHZDMD0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI2NDM4ZDQzOC1jMDQxLTcwZGEtMDZiMy1kODczMmI3OWE0ZWMiLCJjb2duaXRvOmdyb3VwcyI6WyJDbGllbnRlQ2FkYXN0cmFkbyJdLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy1lYXN0LTEuYW1hem9uYXdzLmNvbVwvdXMtZWFzdC0xX2lJYnp4eVJJTiIsImNvZ25pdG86dXNlcm5hbWUiOiI2NDM4ZDQzOC1jMDQxLTcwZGEtMDZiMy1kODczMmI3OWE0ZWMiLCJvcmlnaW5fanRpIjoiYmRmNGZjZDUtZWYzYy00NzU0LThlMjEtYTlmNzU4MTgwN2NlIiwiYXVkIjoiNG1zZG1rcTVwM2pkdW1hcTU0MWJ2NWoyZW4iLCJldmVudF9pZCI6IjcxNzA5ZWNmLTMyYTgtNGQwMi1iMzJhLTQ5NTIzZmM4MGEzMiIsInRva2VuX3VzZSI6ImlkIiwiYXV0aF90aW1lIjoxNzI3MDU2OTExLCJleHAiOjE3MjcwNjA1MTEsImN1c3RvbTpjcGYiOiIxMDAyMDAzMDA4OCIsImlhdCI6MTcyNzA1NjkxMSwianRpIjoiNzE3MjczYTAtM2I3MC00NWQ3LTlkZDAtOWQ1MjNiYzcyMTZlIiwiZW1haWwiOiJkdWR1QGV4YW1wbGUuY29tIn0.E7aiRJd_soy_1uEoekUYsGCgnirLuvUtBPWvPCQp4sR1RlQ5gutpG3GbyTHB2UogSWmgv92ed1H38aWNtmd_KNLLyGpGkdB1Z-wIEx2rkszjyM19vDjw9d6KgafkF0ecQ-E7LOYzDAaIwJEA-sXMKsrWdfi6Pb4KDTzNskykktx1fWZXTJINUU5N3eS07LmjuGnMmy_VjBLSUcsK0S8ID7iYbmsuxn13zx2rk51UW16EH7y8iDt3-5JqPmnYqfyYPEqyFj3FFeMk97JPNUwAKdLbRQia3K35Jh3kwH2FyLDYjKsVaKN06MsaGqXaT5zoqLYnkvYGO5-T_kVLdYPIhw
 
 {
-  "idCarrinho": 2,
-  "formaPagamento": "DINHEIRO"
+  "idCarrinho": 4,
+  "formaPagamento": "CARTAO_MAQUINA"
 }
+
+
+###
+# @name Confirmar pagamento local (DIRETO NO MICROSERVIÇO DE PAGAMENTO)
+#       Se a forma selecionada for local (ex: DINHEIRO, CARTAO_MAQUINA) este endpoint é chamado pelo atendente confirmando
+#       o pagamento.
+#       Se for por serviço externo (ex: MERCADO_PAGO) a confirmação é feita pela integração
+#       (troca de mensagens via fila com serviço de pagamento)
+POST {{url_Servico_Pagamento}}/pagamento/confirmacao
+Content-Type: application/json
+
+{
+  "idPedido": 7
+}
+
 
 ### ######### Etapa 4 Acompanhamento e preparação
 ###
@@ -125,7 +145,7 @@ GET {{baseUrl}}/pedidos?status=RECEBIDO
 
 ###
 # @name Validar pedido
-POST {{baseUrl}}/pedidos/13/validar
+POST {{baseUrl}}/pedidos/7/validar
 
 ###
 # @name Cancelar pedido
@@ -141,11 +161,11 @@ GET {{baseUrl}}/pedidos?atraso=true
 
 ###
 # @name Atualizar pedido Pronto
-POST {{baseUrl}}/pedidos/13/setPronto
+POST {{baseUrl}}/pedidos/7/setPronto
 
 ###
 # @name Finalizar pedido
-POST {{baseUrl}}/pedidos/13/finalizar
+POST {{baseUrl}}/pedidos/7/finalizar
 
 # # #
 # # # ######### Serviços administrativos
