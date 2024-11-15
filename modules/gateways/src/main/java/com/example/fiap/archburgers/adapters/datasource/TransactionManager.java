@@ -11,6 +11,10 @@ public interface TransactionManager {
      * Os adapters de infraestrutura serão responsáveis por fornecer uma implementação apropriada
      * que respeite as propriedades esperadas da Transação.
      */
-    <T> T runInTransaction(Supplier<T> task) throws Exception;
+    <T> T runInTransaction(TransactionTask<T> task) throws Exception;
 
+    @FunctionalInterface
+    interface TransactionTask<T> {
+        T run() throws Exception;
+    }
 }

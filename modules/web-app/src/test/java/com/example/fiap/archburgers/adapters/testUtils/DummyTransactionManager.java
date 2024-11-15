@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 public class DummyTransactionManager implements TransactionManager {
     @Override
-    public <T> T runInTransaction(Supplier<T> task) throws Exception {
-        return task.get();
+    public <T> T runInTransaction(TransactionTask<T> task) throws Exception {
+        return task.run();
     }
 }

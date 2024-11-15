@@ -47,13 +47,13 @@ public class DatabaseConnection implements TransactionManager, AutoCloseable {
     }
 
     @Override
-    public <T> T runInTransaction(Supplier<T> task) throws Exception {
+    public <T> T runInTransaction(TransactionTask<T> task) throws Exception {
         Connection conn = cpds.getConnection();
         try {
             conn.setAutoCommit(false);
             inTransactionConnection.set(new ConnectionInstance(conn));
 
-            T result = task.get();
+            T result = task.run();
             conn.commit();
 
             return result;
