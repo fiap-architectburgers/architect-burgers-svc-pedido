@@ -20,13 +20,12 @@ class CatalogoProdutosServiceImplIT {
 
     @Test
     void findAll() throws Exception {
-        HttpUrl baseUrl;
         try (MockWebServer server = new MockWebServer()) {
 
             server.enqueue(new MockResponse().setBody(SAMPLE_DATA));
 
             server.start();
-            baseUrl = server.url("/cardapio/");
+            HttpUrl baseUrl = server.url("/cardapio/");
 
             CatalogoProdutosServiceImpl service = new CatalogoProdutosServiceImpl(new StaticEnvironment(Map.of(
                     "archburgers.integration.cardapio.ApiUrl", baseUrl.url().toString()

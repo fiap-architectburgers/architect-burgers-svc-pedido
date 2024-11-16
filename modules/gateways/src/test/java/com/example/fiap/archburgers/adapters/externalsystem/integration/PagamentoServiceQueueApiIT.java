@@ -45,8 +45,8 @@ class PagamentoServiceQueueApiIT {
 
         queueApi = new PagamentoServiceQueueApi(new StaticEnvironment(Map.of(
                 "archburgers.integration.sqs.sqsEndpoint", localstack.getEndpoint().toString(),
-                "archburgers.integration.sqs.pedidosQueueName", "pedidos",
-                "archburgers.integration.sqs.pedidosQueueUrl", localstack.getEndpoint() + "/000000000000/pedidos",
+                "archburgers.integration.sqs.pagamentosEmAbertoQueueName", "pedidos",
+                "archburgers.integration.sqs.pagamentosEmAbertoQueueUrl", localstack.getEndpoint() + "/000000000000/pedidos",
                 "archburgers.integration.sqs.pagamentosConcluidosQueueName", "pagamentos_concluidos",
                 "archburgers.integration.sqs.pagamentosConcluidosQueueUrl", localstack.getEndpoint() + "/000000000000/pagamentos_concluidos"
         )));

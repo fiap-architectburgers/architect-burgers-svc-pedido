@@ -45,16 +45,11 @@ public class CarrinhoApiHandler {
     public ResponseEntity<CarrinhoDto> findCarrinho(@PathVariable("idCarrinho") Integer idCarrinho) {
 
         try {
-            if (idCarrinho == null)
-                throw new IllegalArgumentException("Path param idCarrinho missing");
-
             var carrinho = carrinhoUseCases.findCarrinho(idCarrinho);
             if (carrinho == null) {
                 return WebUtils.errorResponse(HttpStatus.NOT_FOUND, "Carrinho not found [" + idCarrinho + "]");
             }
             return WebUtils.okResponse(CarrinhoPresenter.entityToPresentationDto(carrinho));
-        } catch (IllegalArgumentException iae) {
-            return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {
             LOGGER.error("Ocorreu um erro ao consultar carrinho: {}", e, e);
             return WebUtils.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro ao consultar carrinho");
@@ -94,13 +89,11 @@ public class CarrinhoApiHandler {
 
         CarrinhoDetalhe carrinho;
         try {
-            if (idCarrinho == null)
-                throw new IllegalArgumentException("Path param idCarrinho missing");
-            if (param == null)
-                throw new IllegalArgumentException("Request body missing");
+            if (param.idItemCardapio() == null)
+                throw new IllegalArgumentException("idItemCardapio missing");
 
             carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.addItem(
-                    idCarrinho, param.validarIdItemCardapio()));
+                    idCarrinho, param.idItemCardapio()));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());
         } catch (Exception e) {
@@ -119,11 +112,6 @@ public class CarrinhoApiHandler {
 
         CarrinhoDetalhe carrinho;
         try {
-            if (idCarrinho == null)
-                throw new IllegalArgumentException("Path param idCarrinho missing");
-            if (numSequencia == null)
-                throw new IllegalArgumentException("Path param numSequencia missing");
-
             carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.deleteItem(
                     idCarrinho, numSequencia));
         } catch (IllegalArgumentException iae) {
@@ -142,11 +130,6 @@ public class CarrinhoApiHandler {
                                                             @RequestBody CarrinhoObservacoesDto param) {
         CarrinhoDetalhe carrinho;
         try {
-            if (idCarrinho == null)
-                throw new IllegalArgumentException("Path param idCarrinho missing");
-            if (param == null)
-                throw new IllegalArgumentException("Request body missing");
-
             carrinho = transactionManager.runInTransaction(() -> carrinhoUseCases.setObservacoes(idCarrinho, param.observacoes()));
         } catch (IllegalArgumentException iae) {
             return WebUtils.errorResponse(HttpStatus.BAD_REQUEST, iae.getMessage());

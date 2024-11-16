@@ -1,7 +1,6 @@
 package com.example.fiap.archburgers.adapters.controllers;//import static org.junit.jupiter.api.Assertions.*;
 
 import com.example.fiap.archburgers.adapters.auth.UsuarioLogadoTokenParser;
-import com.example.fiap.archburgers.adapters.datasource.TransactionManager;
 import com.example.fiap.archburgers.adapters.dto.ClienteDto;
 import com.example.fiap.archburgers.adapters.dto.ClienteWithTokenDto;
 import com.example.fiap.archburgers.adapters.testUtils.DummyTransactionManager;
@@ -22,7 +21,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,11 +41,9 @@ class ClienteApiHandlerTest {
 
     private MockMvc mockMvc;
 
-    private ClienteApiHandler clienteApiHandler;
-
     @BeforeEach
     void setUp() {
-        clienteApiHandler = new ClienteApiHandler(clienteUseCases, usuarioLogadoTokenParser,
+        ClienteApiHandler clienteApiHandler = new ClienteApiHandler(clienteUseCases, usuarioLogadoTokenParser,
                 new DummyTransactionManager());
 
         mockMvc = MockMvcBuilders.standaloneSetup(clienteApiHandler).build();

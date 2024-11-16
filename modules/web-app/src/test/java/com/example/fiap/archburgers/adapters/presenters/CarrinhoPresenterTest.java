@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CarrinhoPresenterTest {
 
@@ -56,5 +57,24 @@ class CarrinhoPresenterTest {
         assertThat(dto).isEqualTo(new CarrinhoDto(123, 98, null,
                 dtoItens, "Não adicionar molho",
                 new ValorMonetarioDto("23.49", "R$ 23,49"), 1714415400000L));
+    }
+
+    @Test
+    void entityToPresentationDto_invalidDetailMaooing() {
+        var entity = Carrinho.carrinhoSalvoClienteIdentificado(123, new IdCliente(98),
+                List.of(
+                        new ItemPedido(1, 2),
+                        new ItemPedido(2, 14)
+                ),"Não adicionar molho",
+                LocalDateTime.of(2024, 4, 29, 15, 30)
+        );
+
+        var detalhesItens = Map.of(
+                2, new ItemCardapio(2, TipoItemCardapio.LANCHE, "Cheese Burger",
+                        "Hamburger com queijo", new ValorMonetario("18.50"))
+        );
+
+        assertThatThrownBy(() -> CarrinhoPresenter.entityToPresentationDto(new CarrinhoDetalhe(entity, detalhesItens)))
+                .hasMessageContaining("details missing");
     }
 }
