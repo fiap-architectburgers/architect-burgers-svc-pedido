@@ -65,6 +65,22 @@ public class PedidoApiHandler {
         return WebUtils.okResponse(PedidoPresenter.entityToPresentationDto(pedido));
     }
 
+    @GetMapping(path = "/pedidos/{id}")
+    public ResponseEntity<PedidoDto> getPedido(@PathVariable("id") Integer id) {
+        try {
+            PedidoDetalhe pedido = pedidoUseCases.getPedido(id);
+
+            if (pedido == null) {
+                return WebUtils.errorResponse(HttpStatus.NOT_FOUND, "Pedido " + id + " nao encontrado");
+            }
+
+            return WebUtils.okResponse(PedidoPresenter.entityToPresentationDto(pedido));
+        } catch (Exception e) {
+            LOGGER.error("Ocorreu um erro ao obter pedido: {}", e, e);
+            return WebUtils.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro ao obter pedido");
+        }
+    }
+
     @Operation(summary = "Lista os pedidos conforme critério informado",
             description = "Se não for informado nenhum dos filtros será feita busca de todos os pedidos ativos (excluindo Finalizado e Cancelado) seguindo ordenação padrão",
             parameters = {

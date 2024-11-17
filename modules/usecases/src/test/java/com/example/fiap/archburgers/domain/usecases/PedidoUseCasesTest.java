@@ -233,6 +233,41 @@ class PedidoUseCasesTest {
     }
 
     @Test
+    void getPedido_found() {
+        int idPedido = 42;
+        List<ItemPedido> itensPedido = List.of(
+                new ItemPedido(1, 1000)
+        );
+
+        Map<Integer, ItemCardapio> detalhesItensPedido = Map.of(
+                1000, new ItemCardapio(1000, TipoItemCardapio.LANCHE, "Hamburger", "Hamburger",
+                        new ValorMonetario("25.90"))
+        );
+
+        Pedido pedido = Pedido.pedidoRecuperado(idPedido, new IdCliente(25), null,
+                itensPedido, "Lanche sem cebola", StatusPedido.RECEBIDO,
+                FORMA_PAGAMENTO_DINHEIRO, dateTime);
+
+        when(pedidoGateway.getPedido(idPedido)).thenReturn(pedido);
+        when(catalogoProdutosLocal.findAll(itensPedido)).thenReturn(detalhesItensPedido);
+
+        var result = pedidoUseCases.getPedido(idPedido);
+
+        assertThat(result).isEqualTo(new PedidoDetalhe(pedido, detalhesItensPedido));
+    }
+
+    @Test
+    void getPedido_notFound() {
+        int idPedido = 42;
+
+        when(pedidoGateway.getPedido(idPedido)).thenReturn(null);
+
+        var result = pedidoUseCases.getPedido(idPedido);
+
+        assertThat(result).isNull();
+    }
+
+    @Test
     void validarPedido() {
         List<ItemPedido> itensPedido = List.of(
                 new ItemPedido(1, 1000)
