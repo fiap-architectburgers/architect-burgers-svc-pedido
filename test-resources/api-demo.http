@@ -123,6 +123,10 @@ Authorization: Bearer eyJraWQiOiJ0N3A5ckNOZHp3NGhNNEk3TGc2eDNDVVlcL1o4eTh4R0NReH
   "formaPagamento": "CARTAO_MAQUINA"
 }
 
+###
+# @name Consultar pedido
+GET {{baseUrl}}/pedidos/1
+
 
 ###
 # @name Confirmar pagamento local (DIRETO NO MICROSERVIÇO DE PAGAMENTO)

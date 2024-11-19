@@ -21,7 +21,7 @@
         <module>modules/usecases</module>
         <module>modules/gateways</module>
 	<module>modules/web-app</module>
-		<!--<module>modules/QA</module>-->
+	<module>modules/QA</module>
     </modules>
 
     <dependencies>

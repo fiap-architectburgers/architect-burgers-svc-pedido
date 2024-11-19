@@ -313,6 +313,38 @@ class PedidoApiHandlerTest {
                 .andExpect(status().isInternalServerError());
     }
 
+    @Test
+    public void getPedido_Success() throws Exception {
+        var idPedido = 11;
+        var pedidoDetalhe = criarPedidoSampleData(idPedido, StatusPedido.PREPARACAO);
+        var pedidoDto = criarPedidoSampleDto(idPedido, StatusPedido.PREPARACAO);
+
+        when(pedidoUseCases.getPedido(eq(idPedido))).thenReturn(pedidoDetalhe);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/pedidos/{id}", idPedido))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(pedidoDto)));
+    }
+
+    @Test
+    public void getPedido_NotFound() throws Exception {
+        var idPedido = 11;
+
+        when(pedidoUseCases.getPedido(eq(idPedido))).thenReturn(null);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/pedidos/{id}", idPedido))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    public void getPedido_InternalServerError() throws Exception {
+        var idPedido = 11;
+
+        when(pedidoUseCases.getPedido(eq(idPedido))).thenThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/pedidos/{id}", idPedido))
+                .andExpect(status().isInternalServerError());
+    }
 
     /// ////////////////
 

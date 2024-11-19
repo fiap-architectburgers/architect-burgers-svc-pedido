@@ -48,6 +48,16 @@ public class PedidoUseCases {
         this.painelPedidos = painelPedidos;
     }
 
+    public PedidoDetalhe getPedido(Integer idPedido) {
+        var pedido = pedidoGateway.getPedido(idPedido);
+        if (pedido == null) {
+            return null;
+        }
+
+        var itens = catalogo.findAll(pedido.itens());
+        return new PedidoDetalhe(pedido, itens);
+    }
+
     public PedidoDetalhe criarPedido(CriarPedidoParam param, UsuarioLogado usuarioLogado) throws DomainPermissionException, Exception {
         if (param == null)
             throw new IllegalArgumentException("Parameter missing");
