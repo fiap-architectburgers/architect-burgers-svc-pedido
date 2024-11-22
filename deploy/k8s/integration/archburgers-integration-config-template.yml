@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: archburgers-integration-config
+data:
+  "archburgers.integration.cardapio.ApiUrl": "{CARDAPIO_URL}"
+  "archburgers.integration.pagamento.ApiUrl": "{PAGAMENTO_URL}"
+  "archburgers.integration.sqs.sqsEndpoint": "{SQS_ENDPOINT}"
+  "archburgers.integration.sqs.pagamentosEmAbertoQueueName": "{QUEUE_PEDIDOS}"
+  "archburgers.integration.sqs.pagamentosConcluidosQueueName": "{QUEUE_CONFIRMACAO}"

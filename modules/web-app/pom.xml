@@ -135,9 +135,7 @@
 
                         <archburgers.integration.sqs.sqsEndpoint>http://localhost:4566</archburgers.integration.sqs.sqsEndpoint>
                         <archburgers.integration.sqs.pagamentosEmAbertoQueueName>pedidos</archburgers.integration.sqs.pagamentosEmAbertoQueueName>
-                        <archburgers.integration.sqs.pagamentosEmAbertoQueueUrl>http://localhost:4566/000000000000/pedidos</archburgers.integration.sqs.pagamentosEmAbertoQueueUrl>
                         <archburgers.integration.sqs.pagamentosConcluidosQueueName>pagamentos_concluidos</archburgers.integration.sqs.pagamentosConcluidosQueueName>
-                        <archburgers.integration.sqs.pagamentosConcluidosQueueUrl>http://localhost:4566/000000000000/pagamentos_concluidos</archburgers.integration.sqs.pagamentosConcluidosQueueUrl>
 
                     </environmentVariables>
                 </configuration>
