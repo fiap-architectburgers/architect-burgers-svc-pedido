@@ -32,39 +32,13 @@ class PagamentoServiceQueueApiTest {
     }
 
     @Test
-    void whenConstructedWithNoPedidosQueueUrl_expectException() {
-        Environment environment = Mockito.mock(Environment.class);
-        
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.sqsEndpoint")).thenReturn("validSqsEndpoint");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueName")).thenReturn("validPedidosQueueName");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueUrl")).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class, () -> new PagamentoServiceQueueApi(environment));
-    }
-
-    @Test
     void whenConstructedWithNoPagamentosConcluidosQueueName_expectException() {
         Environment environment = Mockito.mock(Environment.class);
 
         Mockito.when(environment.getProperty("archburgers.integration.sqs.sqsEndpoint")).thenReturn("validSqsEndpoint");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueName")).thenReturn("validPedidosQueueName");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueUrl")).thenReturn("validPedidosQueueUrl");
+        Mockito.when(environment.getProperty("archburgers.integration.sqs.pagamentosEmAbertoQueueName")).thenReturn("validPedidosQueueName");
         Mockito.when(environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueName")).thenReturn(null);
 
         assertThrows(IllegalArgumentException.class, () -> new PagamentoServiceQueueApi(environment));
     }
-    
-    @Test
-    void whenConstructedWithNoPagamentosConcluidosQueueUrl_expectException() {
-        Environment environment = Mockito.mock(Environment.class);
-
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.sqsEndpoint")).thenReturn("validSqsEndpoint");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueName")).thenReturn("validPedidosQueueName");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pedidosQueueUrl")).thenReturn("validPedidosQueueUrl");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueName")).thenReturn("validPagamentosConcluidosQueueName");
-        Mockito.when(environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueUrl")).thenReturn(null);
-
-        assertThrows(IllegalArgumentException.class, () -> new PagamentoServiceQueueApi(environment));
-    }
-
 }
