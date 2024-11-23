@@ -112,6 +112,9 @@ jobs:
       - name: Get API Gateway info
         id: get-apigw-info
         run: ./deploy/utils/get-external-api-info.sh ${{vars.API_GATEWAY_NAME}} >> $GITHUB_OUTPUT
+      - name: Get Cognito UserPool info
+        id: get-cognito-info
+        run: ./deploy/utils/get-user-pool-info.sh ${{vars.COGNITO_USER_POOL}} >> $GITHUB_OUTPUT
 
       - name: Prepare kubernetes files
         run: |
