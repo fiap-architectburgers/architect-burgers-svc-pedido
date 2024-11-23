@@ -135,11 +135,11 @@ jobs:
       - name: Prepare Integracao configmap
         run: |
           cat ./deploy/k8s/integration/archburgers-integration-config-template.yml \
-             | sed "s|{CARDAPIO_URL}|${{vars.CARDAPIO_INTERNAL_API_URL}}/" \
-             | sed "s|{PAGAMENTO_URL}|${{vars.PAGAMENTO_INTERNAL_API_URL}}/" \
-             | sed "s|{SQS_ENDPOINT}|${{vars.SQS_ENDPOINT}}/" \
-             | sed "s|{QUEUE_PEDIDOS}|${{vars.PAGAMENTO_QUEUE_PEDIDO}}/" \
-             | sed "s|{QUEUE_CONFIRMACAO}|${{vars.PAGAMENTO_QUEUE_CONFIRMACAO}}/" > ./kube-integracao-configs.yml
+             | sed "s|{CARDAPIO_URL}|${{vars.CARDAPIO_INTERNAL_API_URL}}|" \
+             | sed "s|{PAGAMENTO_URL}|${{vars.PAGAMENTO_INTERNAL_API_URL}}|" \
+             | sed "s|{SQS_ENDPOINT}|${{vars.SQS_ENDPOINT}}|" \
+             | sed "s|{QUEUE_PEDIDOS}|${{vars.PAGAMENTO_QUEUE_PEDIDO}}|" \
+             | sed "s|{QUEUE_CONFIRMACAO}|${{vars.PAGAMENTO_QUEUE_CONFIRMACAO}}|" > ./kube-integracao-configs.yml
 
       - name: Update image in App Deployment
         run: |
