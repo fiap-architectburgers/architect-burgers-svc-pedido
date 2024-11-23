@@ -20,17 +20,17 @@ spec:
             - name: "POSTGRES_DB"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-db-access-config"
+                  name: "svc-pedido-db-access-config"
                   key: "archburgers.datasource.db_name"
             - name: "POSTGRES_USER"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-db-access-config"
+                  name: "svc-pedido-db-access-config"
                   key: "archburgers.datasource.dbUser"
             - name: "POSTGRES_PASSWORD"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-db-access-config"
+                  name: "svc-pedido-db-access-config"
                   key: "archburgers.datasource.dbPass"
             - name: "TZ"
               value: "America/Sao_Paulo"

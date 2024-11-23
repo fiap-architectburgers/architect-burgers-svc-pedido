@@ -21,17 +21,17 @@ spec:
             - name: "archburgers.datasource.dbUrl"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-db-access-config"
+                  name: "svc-pedido-db-access-config"
                   key: "archburgers.datasource.dbUrl"
             - name: "archburgers.datasource.dbUser"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-db-access-config"
+                  name: "svc-pedido-db-access-config"
                   key: "archburgers.datasource.dbUser"
             - name: "archburgers.datasource.dbPass"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-db-access-config"
+                  name: "svc-pedido-db-access-config"
                   key: "archburgers.datasource.dbPass"
 
             - name: "archburgers.integration.aws.region"
