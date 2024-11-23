@@ -1,10 +1,9 @@
 name: app-deploy
 run-name: Package and deploy application
 on:
-  push: {}  # TODO - Testing - change to Main only
-#  push:
-#    branches:
-#      - main
+  push:
+    branches:
+      - main
   workflow_dispatch: {}
 
 jobs:
