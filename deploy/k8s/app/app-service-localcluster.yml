@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: archburgers-svc-pedidos-svc
+  name: archburgers-svc-pedidos-service
 spec:
   type: NodePort
   selector:

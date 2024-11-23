@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: archburgers-db-access-config
+  name: svc-pedido-db-access-config
 data:
   "archburgers.datasource.db_name": "archburgers"
   "archburgers.datasource.dbUrl": "jdbc:postgresql://archburgers-db-svc/archburgers?autoReconnect=true"
