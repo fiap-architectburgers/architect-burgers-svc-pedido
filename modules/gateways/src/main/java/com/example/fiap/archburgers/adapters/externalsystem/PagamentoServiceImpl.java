@@ -114,6 +114,8 @@ public class PagamentoServiceImpl implements PagamentoService {
                         confirmacao.idPedidoSistemaExterno()
                 );
 
+                LOGGER.info("Mensagem de pagamento recebida para pedido {}", confirmacao.idPedido());
+
                 callback.accept(pagamento);
                 queueApi.deleteMessagesQueueConfirmacao(message);
             } catch (Exception e) {

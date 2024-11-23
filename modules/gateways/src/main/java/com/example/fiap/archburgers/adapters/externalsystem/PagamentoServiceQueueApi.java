@@ -1,65 +1,70 @@
 package com.example.fiap.archburgers.adapters.externalsystem;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest;
-import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest;
-import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.awssdk.services.sqs.model.*;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class PagamentoServiceQueueApi implements AutoCloseable {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PagamentoServiceQueueApi.class);
 
-    private final String sqsEndpoint;
-    private final String pedidosQueueName;
     private final String pedidosQueueUrl;
-    private final String pagamentosConcluidosQueueName;
     private final String pagamentosConcluidosQueueUrl;
 
     private final SqsClient sqsClient;
 
     public PagamentoServiceQueueApi(Environment environment) {
-        this.sqsEndpoint = environment.getProperty("archburgers.integration.sqs.sqsEndpoint");
+        String sqsEndpoint = environment.getProperty("archburgers.integration.sqs.sqsEndpoint");
         if (sqsEndpoint == null)
             throw new IllegalArgumentException("archburgers.integration.sqs.sqsEndpoint not set");
 
-        this.pedidosQueueName = environment.getProperty("archburgers.integration.sqs.pagamentosEmAbertoQueueName");
+        String pedidosQueueName = environment.getProperty("archburgers.integration.sqs.pagamentosEmAbertoQueueName");
         if (pedidosQueueName == null)
             throw new IllegalArgumentException("archburgers.integration.sqs.pagamentosEmAbertoQueueName not set");
 
-        this.pedidosQueueUrl = environment.getProperty("archburgers.integration.sqs.pagamentosEmAbertoQueueUrl");
-        if (pedidosQueueUrl == null)
-            throw new IllegalArgumentException("archburgers.integration.sqs.pagamentosEmAbertoQueueUrl not set");
-
-        this.pagamentosConcluidosQueueName = environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueName");
+        String pagamentosConcluidosQueueName = environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueName");
         if (pagamentosConcluidosQueueName == null)
             throw new IllegalArgumentException("archburgers.integration.sqs.pagamentosConcluidosQueueName not set");
-
-        this.pagamentosConcluidosQueueUrl = environment.getProperty("archburgers.integration.sqs.pagamentosConcluidosQueueUrl");
-        if (pagamentosConcluidosQueueUrl == null)
-            throw new IllegalArgumentException("archburgers.integration.sqs.pagamentosConcluidosQueueUrl not set");
 
         sqsClient = SqsClient.builder()
                 .region(Region.US_EAST_1)
                 .endpointOverride(URI.create(sqsEndpoint))
                 .build();
 
-        // Create queues if they don't exist
-        for (String queueName : List.of(pedidosQueueName, pagamentosConcluidosQueueName)) {
-            CreateQueueRequest createRequest = CreateQueueRequest.builder()
-                    .queueName(queueName)
-                    .build();
-            sqsClient.createQueue(createRequest);
+        String pedidosUrl;
+        String confirmacaoUrl;
+        try {
+            pedidosUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(pedidosQueueName).build()).queueUrl();
+            confirmacaoUrl = sqsClient.getQueueUrl(GetQueueUrlRequest.builder().queueName(pagamentosConcluidosQueueName).build()).queueUrl();
+        } catch (QueueDoesNotExistException e) {
+            LOGGER.error("Filas de comunicação com serviço de pagamento não existem! Sistema disponível apenas para testes, não será possível realizar pagamentos.");
+            pedidosUrl = null;
+            confirmacaoUrl = null;
+        } catch (Exception e) {
+            LOGGER.error("Erro ao obter filas de comunicação com serviço de pagamento! Sistema disponível apenas para testes, não será possível realizar pagamentos.");
+            pedidosUrl = null;
+            confirmacaoUrl = null;
         }
+
+        this.pedidosQueueUrl = pedidosUrl;
+        this.pagamentosConcluidosQueueUrl = confirmacaoUrl;
     }
 
     public void sendMessageQueuePagamento(String payload) {
+        if (pedidosQueueUrl == null) {
+            // Nesta condição a aplicação está em execução parcialmente apenas, para testes por exemplo.
+            // não é possível completar os pedidos.
+            throw new IllegalArgumentException("Sem comunicação com fila de pagamentos");
+        }
+
         SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
                 .queueUrl(pedidosQueueUrl)
                 .messageBody(payload)
@@ -69,6 +74,11 @@ public class PagamentoServiceQueueApi implements AutoCloseable {
     }
 
     public List<MessageSummary> receiveMessagesQueueConfirmacao() {
+        if (pedidosQueueUrl == null) {
+            LOGGER.warn("Sem comunicação com fila de pagamentos");
+            return Collections.emptyList();
+        }
+
         ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
                 .queueUrl(pagamentosConcluidosQueueUrl)
                 .maxNumberOfMessages(10)
@@ -77,6 +87,10 @@ public class PagamentoServiceQueueApi implements AutoCloseable {
 
         return sqsClient.receiveMessage(receiveMessageRequest).messages()
                 .stream().map(message -> new MessageSummary(message.body(), message.receiptHandle()))
+                .peek(messageSummary -> {
+                    LOGGER.info("Mensagem recebida na fila de confirmação de pagamentos");
+                    LOGGER.debug("Detalhes da mensagem recebida na fila de confirmação de pagamentos: {}", messageSummary);
+                })
                 .toList();
     }
 

@@ -9,19 +9,20 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.Message;
-import software.amazon.awssdk.services.sqs.model.ReceiveMessageRequest;
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.awssdk.services.sqs.model.*;
+
 
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.aot.hint.TypeReference.listOf;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.SQS;
 
 class PagamentoServiceQueueApiIT {
     private PagamentoServiceQueueApi queueApi;
+    private static String pagamentosEmAbertoQueueUrl;
+    private static String pagamentosConcluidosQueueUrl;
 
     private static LocalStackContainer localstack;
 
@@ -31,6 +32,20 @@ class PagamentoServiceQueueApiIT {
 
         localstack = new LocalStackContainer(localstackImage).withServices(SQS);
         localstack.start();
+
+        try (SqsClient sqsClient = SqsClient.builder()
+                .region(Region.US_EAST_1)
+                .endpointOverride(localstack.getEndpoint())
+                .credentialsProvider(
+                        StaticCredentialsProvider.create(
+                                AwsBasicCredentials.create(localstack.getAccessKey(), localstack.getSecretKey())
+                        )
+                )
+                .build()) {
+
+            pagamentosEmAbertoQueueUrl = sqsClient.createQueue(CreateQueueRequest.builder().queueName("pagamentosEmAberto").build()).queueUrl();
+            pagamentosConcluidosQueueUrl = sqsClient.createQueue(CreateQueueRequest.builder().queueName("pagamentos_concluidos").build()).queueUrl();
+        }
     }
 
     @AfterAll
@@ -45,10 +60,8 @@ class PagamentoServiceQueueApiIT {
 
         queueApi = new PagamentoServiceQueueApi(new StaticEnvironment(Map.of(
                 "archburgers.integration.sqs.sqsEndpoint", localstack.getEndpoint().toString(),
-                "archburgers.integration.sqs.pagamentosEmAbertoQueueName", "pedidos",
-                "archburgers.integration.sqs.pagamentosEmAbertoQueueUrl", localstack.getEndpoint() + "/000000000000/pedidos",
-                "archburgers.integration.sqs.pagamentosConcluidosQueueName", "pagamentos_concluidos",
-                "archburgers.integration.sqs.pagamentosConcluidosQueueUrl", localstack.getEndpoint() + "/000000000000/pagamentos_concluidos"
+                "archburgers.integration.sqs.pagamentosEmAbertoQueueName", "pagamentosEmAberto",
+                "archburgers.integration.sqs.pagamentosConcluidosQueueName", "pagamentos_concluidos"
         )));
     }
 
@@ -74,7 +87,7 @@ class PagamentoServiceQueueApiIT {
                 .build()) {
 
             ReceiveMessageRequest receiveMessageRequest = ReceiveMessageRequest.builder()
-                    .queueUrl(localstack.getEndpoint() + "/000000000000/pedidos")
+                    .queueUrl(pagamentosEmAbertoQueueUrl)
                     .maxNumberOfMessages(10)
                     .build();
 
@@ -104,7 +117,7 @@ class PagamentoServiceQueueApiIT {
 
             for (String testMessage : List.of(testMessage1, testMessage2)) {
                 SendMessageRequest sendMessageRequest = SendMessageRequest.builder()
-                        .queueUrl(localstack.getEndpoint() + "/000000000000/pagamentos_concluidos")
+                        .queueUrl(pagamentosConcluidosQueueUrl)
                         .messageBody(testMessage)
                         .build();
 
@@ -129,5 +142,33 @@ class PagamentoServiceQueueApiIT {
         assertThat(messages).isEmpty();
     }
 
+    @Test
+    public void integracaoDesativada_filaNaoExiste() {
+        try (PagamentoServiceQueueApi brokenQueueApi = new PagamentoServiceQueueApi(new StaticEnvironment(Map.of(
+                "archburgers.integration.sqs.sqsEndpoint", localstack.getEndpoint().toString(),
+                "archburgers.integration.sqs.pagamentosEmAbertoQueueName", "pagamentosEmAberto_NAO_EXISTE",
+                "archburgers.integration.sqs.pagamentosConcluidosQueueName", "pagamentos_concluidos"
+        )))
+        ) {
+            assertThat(brokenQueueApi.receiveMessagesQueueConfirmacao()).isEmpty();
 
+            assertThatThrownBy(() -> brokenQueueApi.sendMessageQueuePagamento("Teste"))
+                    .hasMessageContaining("Sem comunicação com fila de pagamentos");
+        }
+    }
+
+    @Test
+    public void integracaoDesativada_erro() {
+        try (PagamentoServiceQueueApi brokenQueueApi = new PagamentoServiceQueueApi(new StaticEnvironment(Map.of(
+                "archburgers.integration.sqs.sqsEndpoint", "http://localhost:55999",
+                "archburgers.integration.sqs.pagamentosEmAbertoQueueName", "pagamentosEmAberto",
+                "archburgers.integration.sqs.pagamentosConcluidosQueueName", "pagamentos_concluidos"
+        )))
+        ) {
+            assertThat(brokenQueueApi.receiveMessagesQueueConfirmacao()).isEmpty();
+
+            assertThatThrownBy(() -> brokenQueueApi.sendMessageQueuePagamento("Teste"))
+                    .hasMessageContaining("Sem comunicação com fila de pagamentos");
+        }
+    }
 }
