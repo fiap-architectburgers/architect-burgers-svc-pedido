@@ -37,22 +37,22 @@ spec:
             - name: "archburgers.integration.aws.region"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.aws.region"
             - name: "archburgers.integration.cognito.userPoolId"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.cognito.userPoolId"
             - name: "archburgers.integration.cognito.clientId"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.cognito.clientId"
             - name: "archburgers.integration.cognito.clientSecret"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.cognito.clientSecret"
 
             - name: "archburgers.integration.cardapio.ApiUrl"
@@ -85,17 +85,17 @@ spec:
             - name: "AWS_ACCESS_KEY_ID"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.aws.AWS_ACCESS_KEY_ID"
             - name: "AWS_SECRET_ACCESS_KEY"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.aws.AWS_SECRET_ACCESS_KEY"
             - name: "AWS_SESSION_TOKEN"
               valueFrom:
                 configMapKeyRef:
-                  name: "archburgers-aws-config"
+                  name: "archburgers-pedidos-aws-config"
                   key: "archburgers.integration.aws.AWS_SESSION_TOKEN"
 
           readinessProbe:
