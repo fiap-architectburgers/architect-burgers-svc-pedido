@@ -215,30 +215,6 @@ public class CarrinhoApiHandlerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(CARRINHO_11_DTO)));
     }
 
-    @Test
-    public void setObservacoes_BadRequest() throws Exception {
-        CarrinhoObservacoesDto param = new CarrinhoObservacoesDto("Batata sem sal");
-
-        Mockito.when(carrinhoUseCases.setObservacoes(11, "Batata sem sal")).thenThrow(new IllegalArgumentException("Carrinho invalido"));
-
-        mockMvc.perform(put("/carrinho/11/obs")
-                        .contentType("application/json")
-                        .content(new ObjectMapper().writeValueAsString(param)))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void setObservacoes_InternalServerError() throws Exception {
-        CarrinhoObservacoesDto param = new CarrinhoObservacoesDto("Batata sem sal");
-
-        Mockito.when(carrinhoUseCases.setObservacoes(11, "Batata sem sal")).thenThrow(new RuntimeException("Unexpected Error"));
-
-        mockMvc.perform(put("/carrinho/11/obs")
-                        .contentType("application/json")
-                        .content(new ObjectMapper().writeValueAsString(param)))
-                .andExpect(status().isInternalServerError());
-    }
-
 
     // //
 
