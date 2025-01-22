@@ -22,9 +22,8 @@ jobs:
         run: mvn install dependency:copy-dependencies
       - name: Prepare app directory
         run: |
-          mkdir ./docker/temp_libs
           cp ./modules/web-app/target/svc-pedido-webapi-*.jar ./docker/temp_libs/
-          cp ./modules/web-app/target/lib/* ./docker/temp_libs/
+          cp ./modules/web-app/target/dependency/* ./docker/temp_libs/
       - name: Archive app directory
         uses: actions/upload-artifact@v4
         with:
